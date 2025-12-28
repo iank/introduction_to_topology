@@ -99,8 +99,16 @@ theorem ex1e : A ⊆ B ↔ Bᶜ ⊆ Aᶜ := by
     exact hxNotA hxA                  -- But x ∈ A. contradiction
 
 -- f) A ⊆ Bᶜ iff B ⊆ Aᶜ
--- theorem ex1f : A ⊆ Bᶜ ↔ B ⊆ Aᶜ := by
---   sorry
+theorem ex1f : A ⊆ Bᶜ ↔ B ⊆ Aᶜ := by
+  constructor
+  -- Show that A ⊆ Bᶜ → B ⊆ Aᶜ
+  · intro h x hxB hxA             -- Assume x ∈ B and x ∈ A
+    have hxBc : x ∈ Bᶜ := h hxA   -- Then x ∈ Bᶜ by A ⊆ Bᶜ
+    exact hxBc hxB                -- Contradiction. Therefore x ∈ Aᶜ
+  -- Show that B ⊆ Aᶜ → A ⊆ Bᶜ by the same argument
+  · intro h x hxA hxB
+    have hxAc : x ∈ Aᶜ := h hxB
+    exact hxAc hxA
 
 end
 

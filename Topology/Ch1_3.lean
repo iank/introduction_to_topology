@@ -86,8 +86,17 @@ theorem ex1d : Aᶜ ⊆ B ↔ A ∪ B = univ := by
     · exact hxB                     -- so x ∈ B
 
 -- e) A ⊆ B iff Bᶜ ⊆ Aᶜ
--- theorem ex1e : A ⊆ B ↔ Bᶜ ⊆ Aᶜ := by
---   sorry
+theorem ex1e : A ⊆ B ↔ Bᶜ ⊆ Aᶜ := by
+  constructor
+  -- Show that A ⊆ B → Bᶜ ⊆ Aᶜ
+  · intro h x hx hxA          -- For x ∈ Bᶜ, prove x ∈ Aᶜ
+    have hxB : x ∈ B := h hxA -- Assume x ∈ A. Then x ∈ B because A ⊆ B
+    apply hx hxB              -- But x ∈ Bᶜ. contradiction
+  -- Show that Bᶜ ⊆ Aᶜ → A ⊆ B
+  · intro h x hxA             -- For x ∈ A, prove x ∈ B
+    by_contra hxNotB                  -- Assume x ∈ Bᶜ
+    have hxNotA : x ∈ Aᶜ := h hxNotB  -- Then x ∈ Aᶜ, because Bᶜ ⊆ Aᶜ
+    exact hxNotA hxA                  -- But x ∈ A. contradiction
 
 -- f) A ⊆ Bᶜ iff B ⊆ Aᶜ
 -- theorem ex1f : A ⊆ Bᶜ ↔ B ⊆ Aᶜ := by

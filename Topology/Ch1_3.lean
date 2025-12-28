@@ -62,11 +62,37 @@ theorem ex1c : A ⊆ Bᶜ ↔ A ∩ B = ∅ := by
     exact hxBc
 
 -- d) Aᶜ ⊆ B iff A ∪ B = S
--- TODO
+theorem ex1d : Aᶜ ⊆ B ↔ A ∪ B = univ := by
+  constructor
+  · intro h         -- Show that Aᶜ ⊆ B → A ∪ B = S
+    apply subset_antisymm   -- Show A ∪ B ⊆ S and S ⊆ A ∪ B
+    · simp                  -- A ∪ B ⊆ S is trivial (S is universe)
+    · intro x hx            -- S ⊆ A ∪ B. x ∈ S → x ∈ A OR x ∈ B
+      by_cases hxA : x ∈ A
+      case pos =>           -- x ∈ A is trivial
+        left
+        exact hxA
+      case neg =>           -- x ∉ A → x ∈ B
+        right
+        have hxB : x ∈ B := h hxA
+        exact hxB
+  · intro h x hxAc  -- Show that A ∪ B = S → Aᶜ ⊆ B
+    -- First, since x ∈ S and A ∪ B = S, x ∈ A ∪ B
+    have hxUniv : x ∈ univ := by trivial
+    rewrite [← h] at hxUniv
+    -- Now show x ∈ B
+    rcases hxUniv with hxA | hxB
+    · exact False.elim (hxAc hxA)   -- x ∈ A cannot be the case
+    · exact hxB                     -- so x ∈ B
+
 -- e) A ⊆ B iff Bᶜ ⊆ Aᶜ
--- TODO
+-- theorem ex1e : A ⊆ B ↔ Bᶜ ⊆ Aᶜ := by
+--   sorry
+
 -- f) A ⊆ Bᶜ iff B ⊆ Aᶜ
--- TODO
+-- theorem ex1f : A ⊆ Bᶜ ↔ B ⊆ Aᶜ := by
+--   sorry
+
 end
 
 section

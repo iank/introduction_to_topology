@@ -2,6 +2,8 @@ import Mathlib
 
 open Set
 
+namespace Ch1_3
+
 section
 -- Exercise 1. Let A ⊆ S, B ⊆ S.
 variable {S : Type}
@@ -165,3 +167,5 @@ theorem ex2b (hXY : X ⊆ Y) (hYZ : Y ⊆ Z) : Z \ (Y \ X) = X ∪ (Z \ Y) := by
         intro hxYNotX           -- x ∈ Y \ X would imply x ∈ Y (ie, hxYNotX.1)
         exact hxNotY hxYNotX.1  -- This contradicts x ∉ Y
 end
+
+end Ch1_3

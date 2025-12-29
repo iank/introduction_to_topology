@@ -2,6 +2,8 @@ import Mathlib
 
 open Set
 
+namespace Ch1_2
+
 -- Ch 1.2, exercise 2. If A ⊆ B and B ⊆ C, prove that A ⊆ C
 theorem _subset_trans {α : Type} {A B C : Set α}
   (hAB : A ⊆ B) (hBC : B ⊆ C) :
@@ -89,3 +91,5 @@ theorem cycle_equal
       exact subset_trans hin hwrap              -- And Aₙ ⊆ A₀ (by `hwrap`)
     -- Therefore Aᵢ = A₀
     apply subset_antisymm hi0 h0i
+
+end Ch1_2

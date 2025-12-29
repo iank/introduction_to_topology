@@ -56,7 +56,27 @@ theorem ex1c : ⋃ α, (A α ∪ B α) = (⋃ α, A α) ∪ (⋃ α, B α) := by
 
 -- (d) ⋂ α, (A_α ∩ B_α) = (⋂ α, A_α) ∩ (⋂ α, B_α)
 theorem ex1d : ⋂ α, (A α ∩ B α) = (⋂ α, A α) ∩ (⋂ α, B α) := by
-  sorry
+  ext x
+  constructor
+  · -- Prove x ∈ ⋂ (A α ∩ B α) → x ∈ (⋂ A α) ∩ (⋂ B α)
+    intro hx
+    simp only [mem_iInter, mem_inter_iff] at hx
+    simp only [mem_iInter, mem_inter_iff]
+    -- Show ∀ i, x ∈ A i ∧ x ∈ B i
+    constructor
+    · intro i
+      exact (hx i).left
+    · intro i
+      exact (hx i).right
+  · -- Prove x ∈ (⋂ A α) ∩ (⋂ B α) → x ∈ ⋂ (A α ∩ B α)
+    intro hx
+    simp only [mem_iInter, mem_inter_iff] at hx
+    simp only [mem_iInter, mem_inter_iff]
+    rcases hx with ⟨hA, hB⟩
+    intro i
+    constructor
+    · exact hA i  -- ∀ i, x ∈ A i
+    · exact hB i  -- ∀ i, x ∈ B i
 
 -- (e) TODO
 -- (f) TODO

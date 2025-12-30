@@ -78,8 +78,69 @@ theorem ex1d : ⋂ α, (A α ∩ B α) = (⋂ α, A α) ∩ (⋂ α, B α) := by
     · exact hA i  -- ∀ i, x ∈ A i
     · exact hB i  -- ∀ i, x ∈ B i
 
--- (e) TODO
--- (f) TODO
+-- (e) If for each β ∈ I, A β ⊆ B β then
+--     1) ⋃ A α ⊆ ⋃ B α
+theorem ex1e_1 (hB_subset_A : ∀ (β : I), A β ⊆ B β) : (⋃ α, A α) ⊆ (⋃ α, B α) := by
+  intro x hx                      -- x ∈ ⋃ A α
+  simp only [mem_iUnion] at hx    -- ∃ i, x ∈ A i
+  rcases hx with ⟨i, hAi⟩
+  -- Unpack the goal
+  simp only [mem_iUnion]
+  use i
+  -- Now the goal is to show x ∈ A i → x ∈ B i
+  specialize hB_subset_A i        -- A i ⊆ B i,
+  exact hB_subset_A hAi           -- and x ∈ A i. ∴ x ∈ B i
+
+--     2) ⋂ A α ⊆ ⋂ B α
+theorem ex1e_2 (hB_subset_A : ∀ (β : I), A β ⊆ B β) : (⋂ α, A α) ⊆ (⋂ α, B α) := by
+  -- Need to show x ∈ ⋂ A α → x ∈ ⋂ B α
+  intro x hx
+  simp only [mem_iInter] at hx
+  simp only [mem_iInter]
+  -- Equivalent to showing ∀ i, x ∈ A i → ∀ i, x ∈ B i
+  intro i
+  specialize hx i
+  specialize hB_subset_A i
+  exact hB_subset_A hx
+
+-- (f) Let D ⊆ S.
+variable {D : Set S}
+--     Then:
+--     1) ⋃ (A α ∩ D) = (⋃ A α) ∩ D
+theorem ex1f_1 : ⋃ α, (A α ∩ D) = (⋃ α, A α) ∩ D := by
+  apply subset_antisymm
+  · -- Show ⋃ (A α ∩ D) ⊆ (⋃ A α) ∩ D
+    intro x hx
+    -- Rewrite goal as: (∃ i, x ∈ A i) ∧ x ∈ D
+    simp only [mem_inter_iff, mem_iUnion]
+    -- Rewrite hx as:     ∃ i, x ∈ A i ∧ x ∈ D
+    simp only [mem_iUnion, mem_inter_iff, exists_and_right] at hx
+    exact hx
+  · -- Show (⋃ A α) ∩ D ⊆ ⋃ (A α ∩ D)
+    intro x hx
+    simp only [mem_iUnion, mem_inter_iff, exists_and_right]
+    simp only [mem_inter_iff, mem_iUnion] at hx
+    exact hx
+
+--     2) ⋂ (A α ∪ D) = (⋂ A α) ∪ D
+theorem ex1f_2 : ⋂ α, (A α ∪ D) = (⋂ α, A α) ∪ D := by
+  apply subset_antisymm
+  · -- Show ⋂ (A α ∪ D) ⊆ (⋂ A α) ∪ D
+    intro x hx
+    simp only [mem_iInter, mem_union] at hx
+    simp only [mem_union, mem_iInter]
+    -- ∀ i, x ∈ A i ∨ x ∈ D
+    by_cases hxD : x ∈ D
+    case pos =>
+      right
+      exact hxD
+    case neg =>
+      left
+      intro i
+      specialize hx i
+      exact Or.resolve_right hx hxD
+  · -- Show (⋂ A α) ∪ D ⊆ ⋂ (A α ∪ D)
+    sorry
 
 end
 

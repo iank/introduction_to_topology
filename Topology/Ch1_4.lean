@@ -246,7 +246,19 @@ variable (B : Set S)
 -- Prove that:
 -- a) B ⊆ ⋂ A α IFF ∀ β ∈ I, B ⊆ A β
 theorem ex4a : B ⊆ ⋂ α, A α ↔ ∀ (β : I), B ⊆ A β := by
-  sorry
+  constructor
+  · intro hB i x hx                   -- Goal: show x ∈ B → x ∈ A i
+    have hxA : x ∈ ⋂ α, A α := hB hx  -- B ⊆ ⋂ A α, so x ∈ ⋂ A α
+    simp only [mem_iInter] at hxA
+    specialize hxA i
+    exact hxA
+  · intro hB x hxB                    -- Goal: Show x ∈ B → x ∈ ⋃ A α
+    -- ∀ β, B ⊆ A β
+    simp only [mem_iInter]
+    intro i
+    specialize hB i
+    exact hB hxB
+
 
 -- b) ⋃ A α ⊆ B IFF ∀ β ∈ I, A β ⊆ B
 theorem ex4b : ⋃ α, A α ⊆ B ↔ ∀ (β : I), A β ⊆ B := by

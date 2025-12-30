@@ -140,7 +140,15 @@ theorem ex1f_2 : ⋂ α, (A α ∪ D) = (⋂ α, A α) ∪ D := by
       specialize hx i
       exact Or.resolve_right hx hxD
   · -- Show (⋂ A α) ∪ D ⊆ ⋂ (A α ∪ D)
-    sorry
+    intro x hx
+    simp only [mem_iInter, mem_union]
+    simp only [mem_iInter, mem_union] at hx
+    intro i
+    rcases hx with hxAi | hxD
+    · left
+      exact hxAi i
+    · right
+      exact hxD
 
 end
 

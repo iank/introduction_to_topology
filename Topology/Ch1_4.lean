@@ -264,9 +264,25 @@ def B (x : I) : Set ℝ := {y : ℝ | 0 ≤ y ∧ y ≤ (x : ℝ)}
 
 -- Prove that:
 -- i)   ⋂ A_x = ∅
-
 theorem ex5_i : (⋂ x : I, A x) = (∅ : Set ℝ) := by
-  sorry
+  apply subset_antisymm
+  ·         -- Show ⋂ A x ⊆ ∅
+    intro y hy
+    simp only [mem_iInter] at hy    -- hy: ∀ (i : I), y ∈ A i
+    -- Show that hy is false by constructing a counterexample
+    -- For any given y ∈ I there is an A i where i < y, so y ∉ A i
+    let i : I := ⟨1, by simp⟩
+    have hy_i := hy i                     -- If y ∈ every A i, it must be in A i
+    rcases hy_i with ⟨hy_pos, hy_lt_i⟩    -- This means y is positive and less than i
+    let j : I := ⟨y/2, by simp [hy_pos]⟩  -- Now let j = y/2
+    have hy_j := hy j                     -- If y ∈ every A i, it must also be in A j
+    rcases hy_j with ⟨hy_pos2, hy_lt_j⟩   -- This means y is also less than j
+    simp only [j] at hy_lt_j              -- We have y < y / 2
+    have j_lt_y : (↑j : ℝ) < y := by      -- Now show y / 2 < y
+      simp only [j]
+      exact half_lt_self hy_pos           -- 0 < a → a / 2 < a
+    exact lt_asymm hy_lt_j j_lt_y         -- Since y < y / 2 and y / 2 < y, y ∈ ∅
+  · simp    -- Trivial: ∅ ⊆ ⋂ A x
 
 -- ii)  ⋃ A_x = I
 theorem ex5_ii : (⋃ x : I, A x) = {y : ℝ | 0 < y} := by

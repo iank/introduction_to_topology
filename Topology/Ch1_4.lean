@@ -152,8 +152,64 @@ theorem ex1f_2 : ⋂ α, (A α ∪ D) = (⋂ α, A α) ∪ D := by
 end
 
 section
--- Exercise 2. Let A, B, D ⊆ S. Then
--- TODO
+-- Exercise 2. Let A, B, D ⊆ S. Then prove:
+variable {S : Type}
+variable (A B D : Set S)
+-- a) A ∩ (B ∪ D) = (A ∩ B) ∪ (A ∩ D)
+theorem ex2a : A ∩ (B ∪ D) = (A ∩ B) ∪ (A ∩ D) := by
+  apply subset_antisymm
+  · intro x hx
+    simp only [mem_inter_iff, mem_union] at hx    -- hx:   x ∈ A ∧ (x ∈ B ∨ x ∈ D)
+    simp only [mem_inter_iff, mem_union]          -- goal: (x ∈ A ∧ x ∈ B) ∨ (x ∈ A ∧ x ∈ D)
+    rcases hx with ⟨hxA, hxBorD⟩
+    rcases hxBorD with hxB | hxD  -- x ∈ B or x ∈ D
+    · left                        -- if x ∈ B, match left side of goal
+      exact ⟨hxA, hxB⟩
+    · right
+      exact ⟨hxA, hxD⟩            -- if x ∈ D, match right
+  · intro x hx
+    simp only [mem_inter_iff, mem_union] at hx    -- hx:   x ∈ A ∧ x ∈ B ∨ x ∈ A ∧ x ∈ D
+    simp only [mem_inter_iff, mem_union]          -- goal: x ∈ A ∧ (x ∈ B ∨ x ∈ D)
+    -- Just unpack hx and construct the goal, as above
+    rcases hx with ⟨hxA, hxB⟩ | ⟨hxA, hxD⟩
+    · constructor
+      · exact hxA
+      · left
+        exact hxB
+    · constructor
+      · exact hxA
+      · right
+        exact hxD
+
+-- b) A ∪ (B ∩ D) = (A ∪ B) ∩ (A ∪ D)
+theorem ex2b : A ∪ (B ∩ D) = (A ∪ B) ∩ (A ∪ D) := by
+  apply subset_antisymm
+  · intro x hx
+    simp only [mem_union, mem_inter_iff] at hx
+    simp only [mem_union, mem_inter_iff]
+    rcases hx with hxA | ⟨hxB, hxD⟩
+    · constructor
+      · left
+        exact hxA
+      · left
+        exact hxA
+    · constructor
+      · right
+        exact hxB
+      · right
+        exact hxD
+  · intro x hx
+    simp only [mem_union, mem_inter_iff] at hx
+    simp only [mem_union, mem_inter_iff]
+    -- hx:   (x ∈ A or x ∈ B), and (x ∈ A or x ∈ D)
+    -- goal: Either x ∈ A, or (x ∈ B and x ∈ D)
+    by_cases hxA: x ∈ A
+    case pos =>       -- x ∈ A
+      left
+      exact hxA
+    case neg =>       -- x ∉ A
+      right
+      simpa [hxA] using hx
 end
 
 section

@@ -149,11 +149,38 @@ theorem ex1f_2 : ⋂ α, (A α ∪ D) = (⋂ α, A α) ∪ D := by
       exact hxAi i
     · right
       exact hxD
-
 end
 
--- Exercise 2 (TODO)
--- Exercise 3 (TODO)
+section
+-- Exercise 2. Let A, B, D ⊆ S. Then
+-- TODO
+end
+
+section
+-- Exercise 3. Let A_α (α ∈ I) be an indexed family of subsets of a set S. Let J ⊆ I,
+variable {S I : Type}
+variable {A : I → Set S}
+variable {J : Set I}
+-- Then: a) (⋂ α ∈ J, A α) ⊇ (⋂ α ∈ I, A α)
+theorem ex3a : ⋂ α ∈ J, A α ⊇ ⋂ α, A α := by
+  intro x hx                    -- We have: x ∈ ⋂ A α
+  simp only [mem_iInter] at hx  --      ie: ∀ i, x ∈ A i
+  simp only [mem_iInter]        -- We must show that ∀ j ∈ J, x ∈ A j
+  intro j hxAj                  -- But we already know ∀ i, x ∈ A i
+  specialize hx j               -- Which holds in particular for any j ∈ J, since J ⊆ I
+  exact hx
+
+--       b) (⋃ α ∈ J, A α) ⊆ (⋃ α ∈ I, A α)
+theorem ex3b : ⋃ α ∈ J, A α ⊆ ⋃ α, A α := by
+  -- Basically just show ∀ j ∈ J, j ∈ I
+  intro x hx
+  simp only [mem_iUnion, exists_prop] at hx
+  simp only [mem_iUnion]
+  rcases hx with ⟨j, hxAj⟩
+  use j
+  exact hxAj.right
+end
+
 -- Exercise 4 (TODO)
 -- Exercise 5 (TODO)
 

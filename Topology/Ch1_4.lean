@@ -365,8 +365,32 @@ theorem ex5_iii : (⋂ x : I, B x) = ({0} : Set ℝ) := by
 
 -- iv)  ⋃ B_x = I ∪ {0}
 theorem ex5_iv : (⋃ x : I, B x) = ({y : ℝ | 0 < y} ∪ {0}) := by
-  sorry
-
+  apply subset_antisymm
+  ·         -- Show ⋃ B_x ⊆ I ∪ {0}
+    intro n hn
+    simp only [mem_iUnion] at hn        -- ∃ i, n ∈ B i
+    rcases hn with ⟨i, hnBi⟩            -- Unpack i and n ∈ B i
+    rcases hnBi with ⟨hn_gt_0, hn_lt_i⟩ -- n ∈ A i → 0 ≤ n and n ≥ i, by definition of B i
+    simp only [union_singleton, mem_insert_iff, mem_setOf_eq]   -- n ∈ I ∪ {0} → n = 0 ∨ 0 < n
+    have hn' := lt_or_eq_of_le hn_gt_0  -- 0 ≤ n → 0 < n ∨ 0 = n
+    simpa [or_comm, eq_comm] using hn'  -- rearrange to match the goal
+  ·         -- Show I ∪ {0} ⊆ ⋃ B_x
+    intro n hn
+    simp only [mem_iUnion]
+    simp only [union_singleton, mem_insert_iff, mem_setOf_eq] at hn
+    -- If n = 0 or 0 < n, show ∃ i, n ∈ B i
+    -- First some mechanical stuff to prove that n + 1 > 0
+    have hn0 : 0 ≤ n := by
+      rcases hn with rfl | hpos
+      · exact le_rfl
+      · exact le_of_lt hpos
+    -- Now let i = n + 1
+    let i : I := ⟨n + 1, add_pos_of_nonneg_of_pos hn0 zero_lt_one⟩
+    refine ⟨i, ?_⟩
+    -- Prove than n ∈ B i
+    constructor   -- B i = [0, i] = [0, n + 1]
+    · exact hn0   -- 0 ≤ n
+    · linarith    -- n ≤ n + 1
 end
 
 end Ch1_4

@@ -1,4 +1,5 @@
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.Linarith
 
 open Set
 
@@ -311,7 +312,25 @@ theorem ex5_i : (⋂ x : I, A x) = (∅ : Set ℝ) := by
 
 -- ii)  ⋃ A_x = I
 theorem ex5_ii : (⋃ x : I, A x) = {y : ℝ | 0 < y} := by
-  sorry
+  apply subset_antisymm
+  ·                                   -- Goal: prove ⋃ A x ⊆ I
+    intro n hn                        -- Let n ∈ ⋃ A x
+    simp only [mem_iUnion] at hn      -- ∃ i, n ∈ A i
+    simp only [mem_setOf_eq]          -- Showing n ∈ I is equivalent to showing n > 0
+    rcases hn with ⟨i, hnAi⟩          -- Unpack i and n ∈ A i
+    rcases hnAi with ⟨hnpos, hn_lt_i⟩ -- n ∈ A i → 0 < n and n < i, by definition of A i
+    exact hnpos
+  ·                                   -- Goal: prove I ⊆ ⋃ A x
+    intro n hn                        -- Let n ∈ I
+    simp only [mem_setOf_eq] at hn    -- n ∈ I → n > 0
+    simp only [mem_iUnion]            -- Goal: prove ∃ i, n ∈ A i
+    -- ie, the goal is ⟨i, proof that n ∈ A i⟩
+    let i : I := ⟨n + 1, by linarith⟩
+    refine ⟨i, ?_⟩
+    -- Now prove n ∈ A i
+    constructor   -- ie, prove n is positive and < i
+    · exact hn    -- n > 0
+    · linarith    -- n < i + 1
 
 -- iii) ⋂ B_x = {0}
 theorem ex5_iii : (⋂ x : I, B x) = ({0} : Set ℝ) := by

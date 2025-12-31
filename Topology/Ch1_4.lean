@@ -261,8 +261,21 @@ theorem ex4a : B ⊆ ⋂ α, A α ↔ ∀ (β : I), B ⊆ A β := by
 
 
 -- b) ⋃ A α ⊆ B IFF ∀ β ∈ I, A β ⊆ B
-theorem ex4b : ⋃ α, A α ⊆ B ↔ ∀ (β : I), A β ⊆ B := by
-  sorry
+theorem ex4b : ⋃ α, A α ⊆ B ↔ ∀ (β : I), A β ⊆ B := by    -- This is basically iUnion_subset_iff
+  constructor
+  -- Forward case
+  · intro h α x hx                -- Goal: show x ∈ A α → x ∈ B
+    apply h                       -- h shows x ∈ B, if (new goal) x ∈ ⋃ A α
+    simp only [mem_iUnion]        -- Equivalently, if ∃ i, x ∈ A i
+    use α                         -- i = α
+  -- Reverse case
+  · intro h x hx                  -- Goal: show x ∈ ⋃ A α → x ∈ B
+    simp only [mem_iUnion] at hx  -- ie, show ∃ i, x ∈ A i → x ∈ B
+    rcases hx with ⟨i, hxAi⟩      -- Unpack i, x ∈ A i
+    specialize h i                -- ∀ β, A β ⊆ B, so A i ⊆ B
+    apply h                       -- Showing x ∈ A i will show x ∈ B
+    exact hxAi
+
 end
 
 section

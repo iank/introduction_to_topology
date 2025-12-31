@@ -334,7 +334,34 @@ theorem ex5_ii : (⋃ x : I, A x) = {y : ℝ | 0 < y} := by
 
 -- iii) ⋂ B_x = {0}
 theorem ex5_iii : (⋂ x : I, B x) = ({0} : Set ℝ) := by
-  sorry
+  apply subset_antisymm
+  ·         -- Show ⋂ B x ⊆ 0
+    intro y hy
+    simp only [mem_iInter] at hy        -- hy: ∀ i, y ∈ B i
+    simp only [mem_singleton_iff]       -- Goal: prove y = 0
+    by_contra h                         -- Suppose y ≠ 0
+    -- As an aside, I need to show that this means y > 0
+    have hyge : y ≥ 0 := by
+      let i0 : I := ⟨1, by simp⟩
+      have hyIn := hy i0
+      simp only [B] at hyIn
+      exact hyIn.1
+    have hypos : 0 < y := lt_of_le_of_ne hyge (ne_comm.mp h)
+    -- Now proceed with the argument
+    let j : I := ⟨y/2, by simp [hypos]⟩ -- Let j = y/2
+    have hy_j := hy j                   -- ∀ i, y ∈ B i → y ∈ B j
+    rcases hy_j with ⟨hy_ge_0, hy_le_j⟩ -- y ≤ j by definition of B
+    simp only [j] at hy_le_j            -- ie, y ≤ y / 2
+    linarith [hy_le_j, hypos]           -- But y > 0, contradiction.
+  ·         -- Show {0} ⊆ ⋂ B
+    intro y hy
+    simp only [mem_singleton_iff] at hy
+    simp only [mem_iInter]              -- ie, show y = 0 → ∀ i, y ∈ B i
+    intro i                             -- For any given i
+    constructor                         -- B i is [0,i], so we must show that y ≥ 0 and y ≤ i
+    · linarith                          -- 0 ≤ 0
+    · rw [hy]                           -- 0 ≤ i. i ∈ I, so i > 0 by definition.
+      exact le_of_lt i.property         -- i.property : 0 < i → 0 ≤ i
 
 -- iv)  ⋃ B_x = I ∪ {0}
 theorem ex5_iv : (⋃ x : I, B x) = ({y : ℝ | 0 < y} ∪ {0}) := by

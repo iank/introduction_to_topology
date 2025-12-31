@@ -89,35 +89,26 @@ theorem ex3
       intro x hx
       simp only [mem_setOf_eq, W] at hx -- hx is now an explicit list of what (x.1, x.2) could be
       simp only [mem_prod]              -- We must show x.1 ∈ A and x.2 ∈ B
-      rcases hx with hxW1 | hxW2
-      · rcases hxW1 with ⟨hx1a1, hx2b2⟩
-        subst hx1a1
-        subst hx2b2
-        exact ⟨ha1A, hb2B⟩
-      · rcases hxW2 with ⟨hx1a2, hx2b1⟩
-        subst hx1a2
-        subst hx2b1
-        exact ⟨ha2A, hb1B⟩
+      -- Match up all of the values x could take with the knowledge that they are ∈ A and ∈ B
+      rcases hx with ⟨hx1a1, hx2b2⟩ | ⟨hx1a2, hx2b1⟩
+      · simp [hx1a1, hx2b2, ha1A, hb2B]
+      · simp [hx1a2, hx2b1, ha2A, hb1B]
     · -- Prove W is not a subset of A' × B' (subsets of A and B)
       simp only [not_exists]
       intro A' B' hW          -- Assume there is a product W = A' × B'
-      -- Since (a1,b2) ∈ W and (a2,b1) ∈ W
+      -- Since (a1,b2) ∈ W and (a2,b1) ∈ W = A' × B
       -- we'd have a1 ∈ A'
-      have ha1A' : a1 ∈ A' := by                    -- Just unpacking / matching here
-        have ha1b2W : (a1, b2) ∈ W := by
+      have ha1A' : a1 ∈ A' := by
+        have h : (a1, b2) ∈ A' ×ˢ B' := by
+          rw [← hW]
           simp [W]
-        have ha1b2A'B' : (a1, b2) ∈ A' ×ˢ B' := by
-          simpa [hW] using ha1b2W
-        rcases ha1b2A'B' with ⟨ha1A', hb2B'⟩
-        exact ha1A'
+        exact h.1
       -- And b1 ∈ B'
-      have hb1B' : b1 ∈ B' := by                    -- Just unpacking / matching here
-        have ha2b1W : (a2, b1) ∈ W := by
+      have hb1B' : b1 ∈ B' := by
+        have h : (a2, b1) ∈ A' ×ˢ B' := by
+          rw [← hW]
           simp [W]
-        have ha2b1A'B' : (a2, b1) ∈ A' ×ˢ B' := by
-          simpa [hW] using ha2b1W
-        rcases ha2b1A'B' with ⟨ha2A', hb1B'⟩
-        exact hb1B'
+        exact h.2
       -- That would mean (a1, b1) is in A' × B'
       have ha1b1A'B' : ⟨a1, b1⟩ ∈ A' ×ˢ B' := by
         simp only [mem_prod]

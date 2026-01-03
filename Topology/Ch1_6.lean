@@ -85,7 +85,65 @@ theorem ex1d (f : A → B) (Y : Set B) (hf : Function.Surjective f) : f '' (f �
     exact ⟨hy, rfl⟩
 end
 
--- Exercise 2: TODO
+section
+-- Exercise 2: Let A = {a₁, a₂} and B = {b₁,b₂} be two sets, each having
+-- precisely two distinct elements. Let f : A → B be the constant function such
+-- that f(a) = b₁ for each a ∈ A.
+variable {A B : Type*} [DecidableEq A] [DecidableEq B]
+variable (a1 a2 : A) (b1 b2 : B)
+
+def Aset : Set A := {a1, a2}
+def Bset : Set B := {b1, b2}
+
+-- a) Prove that f⁻¹(f({a₁})) ≠ {a₁}
+theorem ex2a
+    (hAne : a1 ≠ a2)
+    (hAeq : Aset a1 a2 = (Set.univ : Set A))
+    (f : A → B)
+    (h_const : ∀ a : A, f a = b1) :
+    f ⁻¹' (f '' ({a1} : Set A)) ≠ ({a1} : Set A) := by
+  -- First, Rewrite f '' {a₁} as f(a₁)
+  simp only [image_singleton, ne_eq]
+  -- f(a₁) = b₁ by definition
+  have himage : f a1 = b1 := h_const a1
+  rw [himage]
+  -- Show that f⁻¹({b1}) ≠ {a1}
+  have hpreimage : f ⁻¹' {b1} = {a1, a2} := by
+    ext x
+    simp only [mem_preimage, h_const, mem_singleton_iff, mem_insert_iff, true_iff]
+    change x ∈ Aset a1 a2
+    simp [hAeq]
+  -- f⁻¹({b1}) = {a1, a2}, so goal is now to show that {a1, a2} ≠ {a1}
+  rw [hpreimage]
+  -- First, assume {a1, a2} = {a1}
+  intro h
+  -- This equality a2 ∈ {a1}, since a2 ∈ {a1, a2}
+  have : a2 ∈ ({a1, a2} : Set A) := by simp
+  have : a2 ∈ ({a1} : Set A) := by simpa [h] using this
+  -- That would mean a2 = a1
+  have : a2 = a1 := by simpa using this
+  -- But it is not since a1 and a2 are defined to be distinct
+  exact hAne this.symm
+
+-- (b) Prove that f(f⁻¹(B)) ≠ B
+theorem ex2b 
+    (a1 a2 : A) (b1 b2 : B)
+    (hAne : a1 ≠ a2) (hBne : b1 ≠ b2)
+    (hAeq : Aset a1 a2 = (Set.univ : Set A))
+    (hBeq : Bset b1 b2 = (Set.univ : Set B))
+    (f : A → B)
+    (h_const : ∀ a : A, f a = b1) : f '' (f ⁻¹' (Bset b1 b2)) ≠ (Bset b1 b2) := by
+  -- First, the preimage of B is A ({a1 a2}) as before
+  -- But the image f '' A is {b1}, which != B
+  sorry
+
+-- (c) Prove that f({a₁} ∩ {a₂}) ≠ f({a₁}) ∩ f({a₂})
+theorem ex2c :
+  f '' (({a1} : Set A) ∩ ({a2} : Set A)) ≠ (f '' ({a1} : Set A)) ∩ (f '' ({a2} : Set A)) := by
+  sorry
+
+end
+
 -- Exercise 3: TODO
 -- Exercise 4: TODO
 -- Exercise 5: TODO

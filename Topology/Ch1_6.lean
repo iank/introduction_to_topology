@@ -117,7 +117,7 @@ theorem ex2a
   rw [hpreimage]
   -- First, assume {a1, a2} = {a1}
   intro h
-  -- This equality a2 ∈ {a1}, since a2 ∈ {a1, a2}
+  -- This equality says a2 ∈ {a1}, since a2 ∈ {a1, a2}
   have : a2 ∈ ({a1, a2} : Set A) := by simp
   have : a2 ∈ ({a1} : Set A) := by simpa [h] using this
   -- That would mean a2 = a1
@@ -128,20 +128,62 @@ theorem ex2a
 -- (b) Prove that f(f⁻¹(B)) ≠ B
 theorem ex2b 
     (a1 a2 : A) (b1 b2 : B)
-    (hAne : a1 ≠ a2) (hBne : b1 ≠ b2)
+    (hBne : b1 ≠ b2)
     (hAeq : Aset a1 a2 = (Set.univ : Set A))
-    (hBeq : Bset b1 b2 = (Set.univ : Set B))
     (f : A → B)
-    (h_const : ∀ a : A, f a = b1) : f '' (f ⁻¹' (Bset b1 b2)) ≠ (Bset b1 b2) := by
+    (h_const : ∀ a : A, f a = b1) : f '' (f ⁻¹' ({b1, b2} : Set B)) ≠ ({b1, b2} : Set B) := by
   -- First, the preimage of B is A ({a1 a2}) as before
+  have hpreimage : f ⁻¹' {b1, b2} = {a1, a2} := by
+    ext x
+    simp only [mem_preimage, h_const, mem_insert_iff, mem_singleton_iff, true_or, true_iff]
+    change x ∈ Aset a1 a2
+    simp [hAeq]
+  rw [hpreimage]
   -- But the image f '' A is {b1}, which != B
-  sorry
+  have himage : f '' {a1, a2} = {b1} := by
+    ext y
+    simp [h_const]
+  rw [himage]
+  -- Now show {b1} ≠ {b1, b2} as in ex2a
+  intro h
+  -- This equality says b2 ∈ {b1}, since b2 ∈ {b1, b2}
+  have : b2 ∈ ({b1} : Set B) := by simp [h]
+  -- That would mean b2 = b1
+  have : b2 = b1 := by simpa using this
+  -- But it is not since b1 and b2 are defined to be distinct
+  exact hBne this.symm
 
 -- (c) Prove that f({a₁} ∩ {a₂}) ≠ f({a₁}) ∩ f({a₂})
-theorem ex2c :
-  f '' (({a1} : Set A) ∩ ({a2} : Set A)) ≠ (f '' ({a1} : Set A)) ∩ (f '' ({a2} : Set A)) := by
-  sorry
-
+theorem ex2c
+    (a1 a2 : A) (b1 : B)
+    (hAne : a1 ≠ a2)
+    (f : A → B)
+    (h_const : ∀ a : A, f a = b1) :
+    f '' (({a1} ∩ {a2}: Set A)) ≠ (f '' ({a1} : Set A)) ∩ (f '' ({a2} : Set A)) := by
+      intro hx
+      have hfa1 : f '' {a1} = {b1} := by
+        ext y
+        simp [h_const]
+      have hfa2 : f '' {a2} = {b1} := by
+        ext y
+        simp [h_const]
+      have haInter : ({a1} ∩ {a2} : Set A) = ∅ := by
+        ext x
+        constructor
+        · intro hxa
+          rcases hxa with ⟨hxa1, hxa2⟩
+          have : a1 = a2 := by
+            have hxa1' : x = a1 := by simpa using hxa1
+            have hxa2' : x = a2 := by simpa using hxa2
+            rw [← hxa1']
+            rw [← hxa2']
+          exact (hAne this).elim
+        · intro hxa
+          cases hxa
+      rw [hfa1] at hx
+      rw [hfa2] at hx
+      rw [haInter] at hx
+      simp at hx
 end
 
 -- Exercise 3: TODO

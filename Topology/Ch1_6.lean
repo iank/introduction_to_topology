@@ -186,8 +186,65 @@ theorem ex2c
       simp at hx
 end
 
--- Exercise 3: TODO
--- Exercise 4: TODO
+section
+-- Exercise 3: Let f : A → B be given and let {X_a}, a∈I be an indexed family
+-- of subsets of A. Prove:
+variable {A B I : Type}
+variable {X : I → Set A}
+-- a) f(⋃ X α) = ⋃ f(X α).
+theorem ex3a (f : A → B) : f '' (⋃ α, X α) = ⋃ α, f '' X α := by
+  ext y
+  constructor
+  · -- y ∈ f(⋃ X α), prove y ∈ ⋃ f(X α)
+    simp only [mem_image, mem_iUnion, forall_exists_index, and_imp]
+    intro x i hxXi hfxy
+    use i
+    use x
+  · -- y ∈ ⋃ f(X α), prove y ∈ f(⋃ X α)
+    simp only [mem_iUnion, mem_image, forall_exists_index, and_imp]
+    intro i x hxXi hfxy
+    use x
+    constructor
+    · use i
+    · exact hfxy
+
+-- b) f(⋂ X α) ⊆ ⋂ f(X α).
+theorem ex3b (f : A → B) : f '' (⋂ α, X α) ⊆ ⋂ α, f '' X α := by
+  simp only [subset_iInter_iff, image_subset_iff]
+  intro i x hx
+  simp only [mem_preimage, mem_image]
+  use x
+  constructor
+  · simp only [mem_iInter] at hx
+    specialize hx i
+    exact hx
+  · rfl
+
+-- c) If f: A → B is one-one, then f(⋂ X α) = ⋂ f(X α)
+theorem ex3c (f : A → B) (hf : Function.Injective f) : f '' (⋂ α, X α) = ⋂ α, f '' X α := by
+  sorry
+end
+
+section
+-- Exercise 4: Let f : A → B be given and let {Y_a}, a∈I be an indexed family
+-- of subsets of B. Prove:
+variable {A B I : Type}
+variable {Y : I → Set B}
+
+-- a) f⁻¹(⋃ Y_a) = ⋃ f⁻¹(Y_a)
+theorem ex4a (f : A → B) : f ⁻¹' (⋃ α, Y α) = ⋃ α, f ⁻¹' Y α := by
+  sorry
+
+-- b) f⁻¹(⋂ Y_a) = ⋂ f⁻¹(Y_a)
+theorem ex4b (f : A → B) : f ⁻¹' (⋂ α, Y α) = ⋂ α, f ⁻¹' Y α := by
+  sorry
+
+-- c) If X is a subset of B then f⁻¹(C(X)) = C(f⁻¹(X)).
+-- TODO
+-- d) If X is a subset of A, and Y is a subset of B, then f(X ∩ f⁻¹(Y)) = f(X) ∩ Y.
+-- TODO
+end
+
 -- Exercise 5: TODO
 -- Exercise 6: TODO
 -- Exercise 7: TODO

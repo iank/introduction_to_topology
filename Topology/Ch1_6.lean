@@ -281,9 +281,56 @@ theorem ex4b (f : A → B) : f ⁻¹' (⋂ α, Y α) = ⋂ α, f ⁻¹' Y α := 
   constructor <;> simp
 
 -- c) If X is a subset of B then f⁻¹(C(X)) = C(f⁻¹(X)).
--- TODO
+theorem ex4c (f : A → B) (X : Set B) : f ⁻¹' Xᶜ = (f ⁻¹' X)ᶜ := by
+  -- Again, this is `preimage_compl` so `simp` could just handle this but we'll avoid it
+  ext x
+  constructor <;>
+  -- Comments here for the forward case, reverse is similar.
+  · -- Show x ∈ f ⁻¹' Xᶜ → x ∈ (f ⁻¹' X)ᶜ
+    simp only [mem_preimage]
+    -- ie, show f x ∈ Xᶜ → x ∈ (f ⁻¹' X)ᶜ
+    simp only [mem_compl_iff]
+    -- ie, show f x ∉ X → x ∉ f ⁻¹' X
+    simp only [mem_preimage]
+    -- ie, show f x ∉ X → f x ∉ X
+    intro hx
+    exact hx
+
 -- d) If X is a subset of A, and Y is a subset of B, then f(X ∩ f⁻¹(Y)) = f(X) ∩ Y.
--- TODO
+theorem ex4d (f : A → B) (X : Set A) (Y : Set B) : f '' (X ∩ f ⁻¹' Y) = f '' X ∩ Y := by
+  ext y
+  constructor
+  · -- Show y ∈ f '' (X ∩ f ⁻¹' Y) → y ∈ f '' X ∩ Y
+    simp only [mem_image]
+    -- ie, show (∃ x ∈ X ∩ f ⁻¹' Y, f x = y) → y ∈ f '' X ∩ Y
+    intro h
+    rcases h with ⟨x, hx, hfx⟩        -- x, x ∈ X ∩ f⁻¹(Y), f(x) = y
+    rcases hx with ⟨hxX, hxfY⟩        -- x ∈ X, x ∈ f⁻¹(Y)
+    simp only [mem_preimage] at hxfY  -- Now we have f(x) = y, x ∈ X, f(x) ∈ Y
+    -- And we must show y ∈ f(X) ∩ Y
+    simp only [mem_inter_iff, mem_image]
+    -- ie, (∃ x ∈ X, f x = y) ∧ y ∈ Y
+    constructor
+    · use x     -- We already have x ∈ X and f(x) = y
+    · rw [hfx] at hxfY
+      exact hxfY
+  · -- Show y ∈ f '' X ∩ Y → y ∈ f '' (X ∩ f ⁻¹' Y)
+    simp only [mem_image]
+    -- ie, show y ∈ f '' X ∩ Y → ∃ x ∈ X ∩ f ⁻¹' Y, f x = y
+    intro h
+    rcases h with ⟨hyfX, hyY⟩
+    simp only [mem_image] at hyfX
+    -- ie, show y ∈ Y, ∃ x ∈ X, f(x) = y → ∃ x ∈ X ∩ f ⁻¹' Y, f x = y
+    rcases hyfX with ⟨x, hxX, hfxy⟩   -- Unpack: x, x ∈ X, f(x) = y
+    use x
+    constructor
+    · -- Show x ∈ X ∩ f⁻¹(Y)
+      simp only [mem_inter_iff, mem_preimage]
+      -- ie, show x ∈ X ∧ f(x) ∈ Y
+      rw [← hfxy] at hyY  -- We know f(x) = y and f(x) ∈ Y so we know f(x) ∈ Y
+      exact ⟨hxX, hyY⟩    -- And we know x ∈ X
+    · -- Show f(x) = y
+      exact hfxy
 end
 
 -- Exercise 5: TODO

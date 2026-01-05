@@ -221,8 +221,35 @@ theorem ex3b (f : A → B) : f '' (⋂ α, X α) ⊆ ⋂ α, f '' X α := by
   · rfl
 
 -- c) If f: A → B is one-one, then f(⋂ X α) = ⋂ f(X α)
-theorem ex3c (f : A → B) (hf : Function.Injective f) : f '' (⋂ α, X α) = ⋂ α, f '' X α := by
-  sorry
+-- The problem doesn't state I is non-empty but I think we have to assume it.
+theorem ex3c (f : A → B) (hf : Function.Injective f) (hI : Nonempty I) : f '' (⋂ α, X α) = ⋂ α, f '' X α := by
+  ext y
+  constructor
+  · simp only [mem_image, mem_iInter, forall_exists_index, and_imp]
+    intro x hx hfxy i
+    use x
+    constructor
+    · specialize hx i
+      exact hx
+    · exact hfxy
+  · intro hy
+    simp only [mem_image, mem_iInter]
+    simp only [mem_iInter, mem_image] at hy
+    have ⟨i0⟩ := hI
+    have hi0 := hy i0
+    rcases hi0 with ⟨x0, hxi0, hfx0y⟩
+    use x0
+    constructor
+    · intro i
+      have hi := hy i
+      -- f x0 = y, but also f x = y, and by injectivity x = x0
+      rcases hi with ⟨xi, hxi, hfxy⟩
+      have : x0 = xi := by
+        rw [← hfxy] at hfx0y
+        apply hf hfx0y
+      rw [this]
+      exact hxi
+    · exact hfx0y
 end
 
 section

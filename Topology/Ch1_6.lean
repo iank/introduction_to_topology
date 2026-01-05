@@ -260,11 +260,25 @@ variable {Y : I → Set B}
 
 -- a) f⁻¹(⋃ Y_a) = ⋃ f⁻¹(Y_a)
 theorem ex4a (f : A → B) : f ⁻¹' (⋃ α, Y α) = ⋃ α, f ⁻¹' Y α := by
-  sorry
+  -- `simp only [preimage_iUnion]` is sufficient here but that's the theorem we're
+  -- proving so I won't use it
+  ext x
+  constructor <;>   -- Comments below are for the forward case but the reverse is similar.
+  · -- Show x ∈ f ⁻¹' ⋃ α, Y α → x ∈ ⋃ α, f ⁻¹' Y α
+    simp only [mem_iUnion]
+    -- ie, show x ∈ f ⁻¹' ⋃ α, Y α → ∃ i, x ∈ f ⁻¹' Y i
+    simp only [mem_preimage]
+    -- ie, show f x ∈ ⋃ α, Y α → ∃ i, f x ∈ Y i
+    simp only [mem_iUnion]
+    -- ie, show (∃ i, f x ∈ Y i) → ∃ i, f x ∈ Y i
+    intro hi
+    exact hi
 
 -- b) f⁻¹(⋂ Y_a) = ⋂ f⁻¹(Y_a)
 theorem ex4b (f : A → B) : f ⁻¹' (⋂ α, Y α) = ⋂ α, f ⁻¹' Y α := by
-  sorry
+  -- Similary to ex4a using iUnion, preimage, and imp_self.
+  ext x
+  constructor <;> simp
 
 -- c) If X is a subset of B then f⁻¹(C(X)) = C(f⁻¹(X)).
 -- TODO

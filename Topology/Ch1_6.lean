@@ -333,7 +333,81 @@ theorem ex4d (f : A → B) (X : Set A) (Y : Set B) : f '' (X ∩ f ⁻¹' Y) = f
       exact hfxy
 end
 
--- Exercise 5: TODO
+section
+-- Exercise 5: Let A and B be sets.
+variable {A B : Type*}
+
+-- The correspondence that associates with
+--   each element (a, b) ∈ A × B the element p₁(a, b) = a
+--   is a function called the first projection.
+def p1 : A × B → A := fun x => x.1
+
+-- The correspondence that associates with
+--   each element (a, b) ∈ A × B the element p₂(a, b) = b
+--   is a function called the second projection.
+def p2 : A × B → B := fun x => x.2
+
+-- Prove that:
+-- a) if B ≠ ∅, then p₁: A × B → A is onto
+theorem ex5a (hB : Nonempty B) : Function.Surjective (p1 (A:=A) (B:=B)) := by
+  -- Onto means ∀ a ∈ A, ∃ (a, b) s.t. p₁(a, b) = a
+  intro a
+  rcases hB with ⟨b⟩  -- B ≠ ∅ means ∃ b ∈ B
+  use ⟨a, b⟩          -- So for any a we can construct an (a, b) that maps to a.
+  rfl
+
+
+-- b) if A ≠ ∅, then p₂: A × B → B is onto
+theorem ex5b (hA : Nonempty A) : Function.Surjective (p2 (A:=A) (B:=B)) := by
+  intro b
+  rcases hA with ⟨a⟩
+  use ⟨a, b⟩
+  rfl
+
+-- c) Under what circumstances in p₁ or p₂ one-one?
+theorem ex5c (hA : Nonempty A): Function.Injective (p1 (A:=A) (B:=B)) ↔ Subsingleton B := by
+  classical
+  -- p₁ is Injective iff B has at most one distinct element
+  -- I also assume A is not empty, otherwise I'm not sure how to define p₁
+  constructor
+  · intro hp  -- p₁ is one-one → B has at most one distinct element
+    rw [subsingleton_iff] -- So, show that ∀ x y : B, x = y
+    intro b1 b2
+    by_contra h           -- Assume b1 ≠ b2
+    obtain ⟨a⟩ := hA      -- For some a
+    -- p₁(a, b1) = p₂(a, b2) by definition (both = a)
+    have heq : p1 ⟨a, b1⟩ = p1 ⟨a, b2⟩ := by
+      simp [p1]
+    -- But injectivity means p₁(a, b1) = p₁(a, b2) → (a, b1) = (a, b2)
+    have hbeq : (⟨a, b1⟩ : A × B) = ⟨a, b2⟩ := hp heq
+    -- So b1 = b2
+    have hb : b1 = b2 := congrArg Prod.snd hbeq
+    -- Contradiction
+    exact h hb
+  · intro h   -- B has at most one element → p₁ is one-one
+    rw [subsingleton_iff] at h   -- We know ∀ x y : B, x = y
+    intro ⟨a1, b1⟩ ⟨a2, b2⟩ hp   -- We must show that p1(a1, b1) = p1(a2, b2) → (a1, b1) = (a2, b2)
+    simp only [p1] at hp         -- This means a1 = a2 (by definition of p1)
+    have hb : b1 = b2 := h b1 b2 -- But b1 = b2 also, because B has at most one distinct element
+    cases hp                     -- So rewrite a2 -> a1
+    cases hb                     -- And rewrite b2 -> b1
+    rfl                          -- (a1, b1) = (a2, b2)
+
+-- d) What is p₁⁻¹({a}) for an element a ∈ A?
+theorem ex5d (a : A) : p1 ⁻¹' {a} = {ab : A × B | ab.1 = a} := by
+  -- p₁¹({a}) = All the (x, y) ∈ A × B s.t. x = a
+  ext ⟨x, y⟩
+  constructor
+  · intro ha          -- (x, y) ∈ p₁⁻¹({a})
+    simp only [mem_preimage, p1, mem_singleton_iff] at ha   -- Therefore x = a
+    simp only [mem_setOf_eq]
+    exact ha
+  · intro hab
+    simp only [mem_setOf_eq] at hab
+    simp only [mem_preimage, p1, mem_singleton_iff]
+    exact hab
+end
+
 -- Exercise 6: TODO
 -- Exercise 7: TODO
 -- Exercise 8: TODO

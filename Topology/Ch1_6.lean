@@ -368,7 +368,6 @@ theorem ex5b (hA : Nonempty A) : Function.Surjective (p2 (A:=A) (B:=B)) := by
 theorem ex5c (hA : Nonempty A): Function.Injective (p1 (A:=A) (B:=B)) ↔ Subsingleton B := by
   classical
   -- p₁ is Injective iff B has at most one distinct element
-  -- I also assume A is not empty, otherwise I'm not sure how to define p₁
   constructor
   · intro hp  -- p₁ is one-one → B has at most one distinct element
     rw [subsingleton_iff] -- So, show that ∀ x y : B, x = y
@@ -408,8 +407,136 @@ theorem ex5d (a : A) : p1 ⁻¹' {a} = {ab : A × B | ab.1 = a} := by
     exact hab
 end
 
--- Exercise 6: TODO
--- Exercise 7: TODO
--- Exercise 8: TODO
+section
+-- Exercise 6: Let A and B be sets, with B ≠ ∅.
+variable {A B : Type*}
+-- (Since the theorems below take a parameter b I implicitly have B ≠ ∅)
+
+-- For each b ∈ B the correspondence that associates
+-- with each element a ∈ A the element j_b(a) = (a, b) ∈ A × B is a function.
+def j (b : B) : (a : A) → (A × B) := fun x => ⟨x, b⟩
+
+-- a) Prove that for each b ∈ B, j_b : A → A × B is one-one.
+theorem ex6a (b : B) : Function.Injective (j (b) (A:=A)) := by
+  -- Prove that j_b(a1) = j_b(a2) → a1 = a2
+  intro a1 a2 hjb
+  -- j_b(a1) = j_b(a2) means (a1, b) = (a2, b), ie a1 = a2
+  simp only [j, Prod.mk.injEq, and_true] at hjb
+  exact hjb
+
+-- b) What is j_b⁻¹(W) for a subset W ⊆ A × B?
+-- Preimage is all the elements in A s.t. j_b(a) ∈ W
+-- So {a : A | ⟨a, b⟩ ∈ W}
+theorem ex6b (W : Set (A × B)) (b : B) :
+    (j (b) (A:=A)) ⁻¹' W = {a : A | ⟨a, b⟩ ∈ W} := by
+  ext a
+  simp only [mem_preimage, j, mem_setOf_eq]
+end
+
+section
+-- Exercise 7: Let A be a set and E ⊆ A.
+variable {A : Type*}
+
+-- The function χ_E : A → {0, 1} defined by:
+--   χ_E(x) = 1 if x ∈ E and χ_E(x) = 0 if x ∉ E
+-- is called the characteristic function of E.
+noncomputable
+def chi (E : Set A) : A → ℕ := Set.indicator E (fun _ => 1)
+
+-- Let E and F be subsets of A, show:
+-- a) χ_(E ∩ F) = χ_E · χ_F, where χ_E·χ_F(x) = χ_E(x)χ_F(x);
+
+theorem ex7a (E F : Set A) : chi (E ∩ F) = fun x => (chi E x) * (chi F x) := by
+  -- Show χ_(E ∩ F)(a) = χ_E(a)χ_F(a)
+  ext a
+  -- Basically just compute the truth table
+  by_cases haE : a ∈ E <;>
+  by_cases haF : a ∈ F <;>
+  simp [chi, haE, haF]
+
+-- b) χ_(E ∪ F) = χ_E + χ_F - χ_(E ∩ F)
+theorem ex7b (E F : Set A) : chi (E ∪ F) = fun x => (chi E x) + (chi F x) - (chi (E ∩ F) x) := by
+  ext a
+  -- simp [ex7a E F]
+  by_cases haE : a ∈ E <;>
+  by_cases haF : a ∈ F <;>
+  simp [chi, haE, haF]
+
+-- c) Find a similar expression for χ_(E ∪ F ∪ G)
+theorem ex7c (E F G : Set A) : chi (E ∪ F ∪ G) =
+    fun x => (chi E x) + (chi F x) + (chi G x)
+             - ((chi (E ∩ F) x) + (chi (E ∩ G) x) + (chi (F ∩ G) x))
+             + (chi (E ∩ F ∩ G) x)
+  := by
+    ext a
+    by_cases haE : a ∈ E <;>
+    by_cases haF : a ∈ F <;>
+    by_cases haG : a ∈ G <;>
+    simp [chi, haE, haF, haG]
+end
+
+section
+-- Exercise 8: Let A be a set to which there belong precisely n distinct objects.
+-- Prove that there are precisely 2ⁿ distinct objects that belong to 2ᴬ.
+variable {A : Type*}
+
+-- Outline:
+-- 1) Every subset E ⊆ A defines a function χ_E : A → {0, 1}
+-- 2) For every function f : A → {0, 1} we can define E = {x ∈ A | f(x) = 1}
+-- 3) Prove that this is a bijection
+-- 4) If |A| = n, a function A -> {0, 1} is a choice of two options for each of the n elements,
+--      so there are 2^n such functions.
+-- 5) By the bijection above, that means there are 2^n distinct subsets of A.
+
+-- Proof:
+
+-- 1) Every distinct subset E ⊆ A uniquely defines a function χ_E : A → {0, 1}
+noncomputable
+def chi_bool (E : Set A) : A → Bool :=
+  E.indicator (fun _ => true)
+
+-- 2) For every function f : A → {0, 1}, we can define the set E where it is 1.
+def subsetOfFun (f : A → Bool) : Set A := {x | f x = true}
+
+-- 3) Prove that this is a bijection
+-- In other words, that chi_bool and subsetOfFun are in bijection
+-- This will give us that (E : Set A) and (f: A → Bool) have the same cardinality
+
+-- 3a) We need the left inverse, ie ∀ a, inv(to(a)) = a
+lemma subsetOfFun_chi (E : Set A) : subsetOfFun (chi_bool E) = E := by
+  ext x
+  constructor <;> simp [subsetOfFun, chi_bool]
+
+-- 3b) Also the right inverse, ie ∀ b, to(inv(b)) = b
+lemma chi_subsetOfFun (f : A → Bool) : chi_bool (subsetOfFun f) = f := by
+  ext x
+  simp [subsetOfFun, chi_bool]
+  cases h : f x <;> simp [h];
+  rfl
+
+-- 3c) Then we can show the equivalence
+noncomputable
+def subsetsEquivBoolFun : Set A ≃ (A → Bool) := by
+  refine
+  { toFun := chi_bool
+    invFun := subsetOfFun
+    left_inv := subsetOfFun_chi
+    right_inv := chi_subsetOfFun }
+
+-- 4) If |A| = n, |f : A -> {0, 1}| = 2^n, so there are 2^n such functions.
+--    By the bijection above, there are then 2^n distinct subsets of A.
+theorem ex8 (A : Type*) [Fintype A] : Fintype.card (Set A) = 2 ^ Fintype.card A := by
+  classical
+  -- Using the bijection between distinct subsets of A and functions : A → {0, 1},
+  have h1 := Fintype.card_congr (subsetsEquivBoolFun : Set A ≃ (A → Bool))
+  -- We can show there are 2^n functions A → {0, 1}
+  have h2 : Fintype.card (A → Bool) = 2 ^ Fintype.card A := by
+      have hBool : Fintype.card Bool = 2 := by decide             -- Bool has 2 elements
+      have h := Fintype.card_fun (α := A) (β := Bool)
+      simp only [hBool, h]
+  -- So there are 2^n distinct subsets of A
+  rw [← h1] at h2
+  exact h2
+end
 
 end Ch1_6

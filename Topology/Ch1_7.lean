@@ -105,9 +105,48 @@ theorem ex2b (hf: Function.Surjective f) : Function.Injective (F f) ∧ Function
     exact hx
 end ex2
 
+section ex3
+/- Exercise 3
 
--- Exercise 3: TODO
--- Exercise 4: TODO
--- Exercise 5: TODO
+Let f : X → X be a one-one function of a set X into itself.
+Define a sequence of functions f⁰, f¹, f², …, fⁿ, … : X → X
+by letting f⁰ be the identity, f¹ = f, and inductively fⁿ(x) = f(fⁿ⁻¹(x)).
+
+Prove that each of these functions is one-one.
+
+Let R be the subset of X × X consisting of those pairs (a, b) such that
+b = fᵏ(a) for some integer k or a = fʲ(b) for some integer j.
+
+Prove that R is an equivalence relation. -/
+
+-- TODO
+end ex3
+
+section ex4
+/- Exercise 4
+
+Let X be the set of functions from the real numbers into the real numbers
+possessing continuous derivatives.
+
+Let R be the subset of X × X consisting of those pairs (f, g) such that
+Df = Dg where D maps a function into its derivative.
+
+Prove that R is an equivalence relation and describe an equivalence set π(f). -/
+
+-- TODO
+end ex4
+
+section ex5
+/- Exercise 5
+
+Let E be the set of all functions from a set X into a set Y.
+Let b ∈ X and let R be the subset of E × E consisting of those pairs (f, g)
+such that f(b) = g(b).
+
+Prove that R is an equivalence relation.
+
+Define a one-one onto function e_b : E/R → Y. -/
+-- TODO
+end ex5
 
 end Ch1_7

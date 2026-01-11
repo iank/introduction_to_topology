@@ -3,7 +3,7 @@ import Mathlib
 namespace Ch1_7
 
 -- Section 7, Relations
-section ex1
+namespace ex1
 
 /- Exercise 1
 Let P be a subset of the real numbers ℝ such that
@@ -40,7 +40,7 @@ set_option linter.unusedVariables true
 
 end ex1
 
-section ex2
+namespace ex2
 -- Exercise 2
 -- Let f : X → Y be a function from a set X onto a set Y.
 
@@ -105,24 +105,195 @@ theorem ex2b (hf: Function.Surjective f) : Function.Injective (F f) ∧ Function
     exact hx
 end ex2
 
-section ex3
-/- Exercise 3
+namespace ex3
+-- Exercise 3
+-- Let f : X → X be a one-one function of a set X into itself.
 
-Let f : X → X be a one-one function of a set X into itself.
-Define a sequence of functions f⁰, f¹, f², …, fⁿ, … : X → X
-by letting f⁰ be the identity, f¹ = f, and inductively fⁿ(x) = f(fⁿ⁻¹(x)).
+variable (X : Type*) (f : X → X) (hf : Function.Injective f)
 
-Prove that each of these functions is one-one.
+-- Define a sequence of functions f⁰, f¹, f², …, fⁿ, … : X → X
+-- by letting f⁰ be the identity, f¹ = f, and inductively fⁿ(x) = f(fⁿ⁻¹(x)).
 
-Let R be the subset of X × X consisting of those pairs (a, b) such that
-b = fᵏ(a) for some integer k or a = fʲ(b) for some integer j.
+def f_iter : ℕ → (X → X)
+  | 0 => id
+  | n + 1 => f ∘ (f_iter n)
 
-Prove that R is an equivalence relation. -/
+-- a) Prove that each of these functions is one-one.
+theorem ex3a (n : ℕ) (hf : Function.Injective f) : Function.Injective (f_iter X f n) := by
+  -- Must show fⁿ(x) = fⁿ(x') → x = x'
+  induction n with
+  -- Show f⁰(x) = f⁰(x') → x = x'
+  | zero =>
+    intro x x'
+    simp only [f_iter, id_eq, imp_self]
+  -- If fⁿ is injective, show fⁿ⁺¹ is injective
+  | succ n ih =>
+    intro x x' hfx
+    -- we'll use the fact that f is injective,
+    -- and that fⁿ is injective,
+    -- and that fⁿ⁺¹(x) = f ∘ fⁿ(x)
+    simp only [f_iter, Function.comp_apply] at hfx
+    apply ih (hf hfx)
 
--- TODO
+-- Let R be the subset of X × X consisting of those pairs (a, b) such that
+-- b = fᵏ(a) for some integer k or a = fʲ(b) for some integer j.
+
+def R : X → X → Prop :=
+  fun a b => (∃ k : ℕ, b = f_iter X f k a) ∨ (∃ j : ℕ, a = f_iter X f j b)
+
+-- b) Prove that R is an equivalence relation.
+
+theorem R_refl : Reflexive (R X f) := by
+  -- aRb means ∃ k, b = fᵏ(a) or ∃ k, a = fᵏ(b)
+  intro x
+  -- xRx means ∃ k, x = fᵏ(x)
+  simp only [R, or_self]
+  -- Let k = 0
+  use 0
+  -- f⁰(x) = id(x) = x
+  simp [f_iter]
+
+theorem R_symm : Symmetric (R X f) := by
+  intro a b haRb
+  -- Show aRb → bRa
+  simp only [R] at haRb
+  simp only [R]
+  -- aRb means either b = fᵏ(a) or a = fʲ(b) for some k or j
+  -- bRa means either a = fᵏ(b) or b = fʲ(a) for some k or j
+  -- So we just apply whichever case is true to the opposite case in the goal.
+  rcases haRb with ⟨k, hb⟩ | ⟨j, ha⟩
+  · -- Suppose b = fᵏ(a)
+    right
+    use k
+  · -- Suppose a = fʲ(b)
+    left
+    use j
+
+-- We'll use fᵏ(fʲ(x)) = f⁽ᵏ⁺ʲ⁾(x) below
+lemma f_iter_add (k j : ℕ) (a : X) : f_iter X f (k + j) a = f_iter X f j (f_iter X f k a) := by
+  induction j with
+  | zero =>
+    rfl
+  | succ n ih =>
+    simp only [f_iter, Nat.add_eq, Function.comp_apply]
+    rw [ih]
+
+-- f⁽ᵏ⁻ʲ⁾(fʲ(b)) = fᵏ(b)
+lemma f_iter_sub (j k : ℕ) (h : j < k) (b : X) :
+  f_iter X f (k - j) (f_iter X f j b) = f_iter X f k b := by
+    have hk : k = j + (k - j) := (Nat.add_sub_cancel' (Nat.le_of_lt h)).symm
+    nth_rw 2 [hk]
+    rw [← f_iter_add]
+
+-- fʲ(b) = fᵏ(a) means that either b = fᵐ(a) or a = fᵐ(b), depending on whether j' > k
+lemma f_iter_eq_implies_R (hf : Function.Injective f) (k j : ℕ) (a b : X) :
+  f_iter X f j b = f_iter X f k a → (∃ m, b = f_iter X f m a) ∨ (∃ n, a = f_iter X f n b) := by
+  intro h
+  rcases Nat.lt_trichotomy j k with hlt | heq | hgt
+  · -- j < k
+    left
+    use k - j
+    have hj := ex3a X f j hf
+    apply hj
+    have hk : (k - j) + j = k := Nat.sub_add_cancel (Nat.le_of_lt hlt)
+    have hadd := f_iter_add X f (k - j) j a
+    rw [hk] at hadd
+    rw [← h] at hadd
+    exact hadd
+  · -- k = j
+    left
+    use 0
+    subst heq
+    have hj := ex3a X f j hf
+    have hba : b = a := hj h
+    simp [hba, f_iter]
+  · -- k < j
+    right
+    use j - k
+    have hk := ex3a X f k hf
+    apply hk
+    have hj : (j - k) + k = j := Nat.sub_add_cancel (Nat.le_of_lt hgt)
+    have hadd := f_iter_add X f (j - k) k b
+    rw [hj] at hadd
+    rw [h] at hadd
+    exact hadd
+
+theorem R_trans (hf : Function.Injective f) : Transitive (R X f) := by
+  intro a b c haRb hbRc
+  -- Show aRb and bRc → aRc
+  -- have:
+  --   aRb (ie,  either b = fᵏ(a) or a = fʲ(b) for some k or j)
+  --   bRc (ie,  either c = fᵏ(b) or b = fʲ(c) for some k or j)
+  -- goal:
+  --   aRc (ie,  either c = fᵏ(a) or a = fʲ(c) for some k or j)
+  simp only [R] at haRb
+  rcases haRb with ⟨k, hb⟩ | ⟨j, ha⟩
+  · rcases hbRc with ⟨k', hckb⟩ | ⟨j', hbjc⟩
+    · -- i) c = fᵏ'(b) and b = fᵏ(a), therefore
+      --    c = fᵏ'(fᵏ(a)) = f⁽ᵏ' ⁺ ᵏ⁾(a)
+      -- So aRc.
+      rw [hb] at hckb
+      rw [← f_iter_add] at hckb
+      simp only [R]
+      left
+      use k + k'
+    · -- ii) b = fʲ'(c) and b = fᵏ(a), therefore
+      --     fʲ'(c) = fᵏ(a)
+      --     This means that either c = fᵐ(a) or a = fᵐ(c), depending on whether j' > k
+      -- The goal, aRc, is either one of those statements.
+      rw [hb] at hbjc
+      have h := f_iter_eq_implies_R X f hf j' k c a hbjc
+      simp only [R]
+      exact h.symm
+  · rcases hbRc with ⟨k', hckb⟩ | ⟨j', hbjc⟩
+    · -- iii) c = fᵏ'(b) and a = fʲ(b)
+      --      Either k' = j, so c = a
+      --      Or k' > j, so c = f^(k' - j)(fʲ(b)) = f^(k' - j)(a)
+      --      Or j > k', so a = f^(j - k')(fᵏ'(b)) = f^(j - k')(c)
+      rcases Nat.lt_trichotomy j k' with hlt | heq | hgt
+      · -- j < k'
+        simp only [R]
+        left
+        use k' - j
+        have h := f_iter_sub X f j k' hlt b
+        rw [← h] at hckb
+        rw [← ha] at hckb
+        exact hckb
+      · -- j = k'
+        rw [heq] at ha
+        rw [← hckb] at ha
+        rw [ha]
+        apply R_refl
+      · -- k' < j
+        simp only [R]
+        right
+        use j - k'
+        have h := f_iter_sub X f k' j hgt b
+        rw [← h] at ha
+        rw [← hckb] at ha
+        exact ha
+    · -- iv) b = fʲ'(c) and a = fʲ(b), therefore
+      --     a = fʲ(fʲ'(c)) = f⁽ʲ ⁺ ʲ'⁾(c)
+      -- So aRc, like case i)
+      rw [hbjc] at ha
+      rw [← f_iter_add] at ha
+      simp only [R]
+      right
+      use j' + j
+
+theorem R_equivalence (hf : Function.Injective f): Equivalence (R X f) := by
+  constructor
+  case refl => apply R_refl
+  case symm => apply R_symm
+  case trans => apply R_trans X f hf
+
+-- This one really blew up for a couple of reasons.
+-- I guess we reimplemented parts of Function.iterate, iterate_add, and
+-- iterate_injective.
+-- Defining fⁿ on ℤ instead of ℕ might have made it simpler too.
 end ex3
 
-section ex4
+namespace ex4
 /- Exercise 4
 
 Let X be the set of functions from the real numbers into the real numbers
@@ -136,7 +307,7 @@ Prove that R is an equivalence relation and describe an equivalence set π(f). -
 -- TODO
 end ex4
 
-section ex5
+namespace ex5
 /- Exercise 5
 
 Let E be the set of all functions from a set X into a set Y.

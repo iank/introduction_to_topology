@@ -304,7 +304,33 @@ Df = Dg where D maps a function into its derivative.
 
 Prove that R is an equivalence relation and describe an equivalence set π(f). -/
 
--- TODO
+-- Define the set X of functions with continuous derivatives
+def X : Set (ℝ → ℝ) := {f | ContDiff ℝ 1 f}
+
+noncomputable
+def D (f : ℝ → ℝ) : ℝ → ℝ := deriv f
+
+def R : Set (X × X) := {p | D p.1.val = D p.2.val}
+
+theorem R_refl : ∀ f : X, (f, f) ∈ R := by
+  sorry
+
+theorem R_symm : ∀ f g : X, (f, g) ∈ R → (g, f) ∈ R := by
+  sorry
+
+theorem R_trans : ∀ f g h : X, (f, g) ∈ R → (g, h) ∈ R → (f, h) ∈ R := by
+  sorry
+
+theorem R_equivalence : Equivalence (fun (f g : X) => (f, g) ∈ R) := by
+  sorry
+
+def equiv_class (f : X) : Set X := {g | (f, g) ∈ R}
+
+-- Describe the equivalence class: two functions are equivalent iff they differ by a constant
+theorem equiv_class_characterization (f : X) :
+  ∀ g : X, g ∈ equiv_class f ↔ ∃ c : ℝ, ∀ x : ℝ, g.val x = f.val x + c := by
+  sorry
+
 end ex4
 
 namespace ex5
@@ -317,7 +343,41 @@ such that f(b) = g(b).
 Prove that R is an equivalence relation.
 
 Define a one-one onto function e_b : E/R → Y. -/
--- TODO
+variable (X Y : Type)
+variable (b : X)
+
+def E : Type := X → Y
+
+def R : E X Y → E X Y → Prop := fun f g => f b = g b
+
+theorem R_refl : ∀ f : E X Y, R X Y b f f := by
+  sorry
+
+theorem R_symm : ∀ f g : E X Y, R X Y b f g → R X Y b g f := by
+  sorry
+
+theorem R_trans : ∀ f g h : E X Y, R X Y b f g → R X Y b g h → R X Y b f h := by
+  sorry
+
+theorem R_equivalence : Equivalence (R X Y b) := by
+  sorry
+
+-- E/R
+def E_mod_R : Type := Quot (R X Y b)
+
+-- E/R → Y
+def e_b : E_mod_R X Y b → Y := by
+  sorry
+
+theorem e_b_injective : Function.Injective (e_b X Y b) := by
+  sorry
+
+theorem e_b_surjective : Function.Surjective (e_b X Y b) := by
+  sorry
+
+theorem e_b_bijective : Function.Bijective (e_b X Y b) := by
+  sorry
+
 end ex5
 
 end Ch1_7

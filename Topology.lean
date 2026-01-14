@@ -4,3 +4,4 @@ import Topology.Ch1_4
 import Topology.Ch1_5
 import Topology.Ch1_6
 import Topology.Ch1_7
+import Topology.Ch1_8

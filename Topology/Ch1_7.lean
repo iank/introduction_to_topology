@@ -294,43 +294,79 @@ theorem R_equivalence (hf : Function.Injective f): Equivalence (R X f) := by
 end ex3
 
 namespace ex4
-/- Exercise 4
+-- Exercise 4
 
-Let X be the set of functions from the real numbers into the real numbers
-possessing continuous derivatives.
-
-Let R be the subset of X × X consisting of those pairs (f, g) such that
-Df = Dg where D maps a function into its derivative.
-
-Prove that R is an equivalence relation and describe an equivalence set π(f). -/
-
--- Define the set X of functions with continuous derivatives
+-- Let X be the set of functions from the real numbers into the real numbers
+-- possessing continuous derivatives.
 def X : Set (ℝ → ℝ) := {f | ContDiff ℝ 1 f}
 
+-- Let R be the subset of X × X consisting of those pairs (f, g) such that
+-- Df = Dg where D maps a function into its derivative.
 noncomputable
 def D (f : ℝ → ℝ) : ℝ → ℝ := deriv f
-
 def R : Set (X × X) := {p | D p.1.val = D p.2.val}
 
+-- Prove that R is an equivalence relation and describe an equivalence set π(f).
 theorem R_refl : ∀ f : X, (f, f) ∈ R := by
-  sorry
+  intro f
+  rfl
 
 theorem R_symm : ∀ f g : X, (f, g) ∈ R → (g, f) ∈ R := by
-  sorry
+  intro f g hfRg
+  simp only [R, Set.mem_setOf_eq]
+  simp only [R, Set.mem_setOf_eq] at hfRg
+  exact hfRg.symm
 
 theorem R_trans : ∀ f g h : X, (f, g) ∈ R → (g, h) ∈ R → (f, h) ∈ R := by
-  sorry
+  -- Have fRg and gRh, show this implies fRh
+  intro f g h
+  simp only [R, Set.mem_setOf_eq]
+  intro hfRg hgRh
+  rw [hfRg]
+  exact hgRh
 
 theorem R_equivalence : Equivalence (fun (f g : X) => (f, g) ∈ R) := by
-  sorry
+  constructor
+  case refl => apply R_refl
+  case symm => apply R_symm
+  case trans => apply R_trans
 
 def equiv_class (f : X) : Set X := {g | (f, g) ∈ R}
 
 -- Describe the equivalence class: two functions are equivalent iff they differ by a constant
 theorem equiv_class_characterization (f : X) :
   ∀ g : X, g ∈ equiv_class f ↔ ∃ c : ℝ, ∀ x : ℝ, g.val x = f.val x + c := by
-  sorry
-
+  intro g
+  constructor
+  · -- g ∈ π(f) → g(x) = f(x) + c
+    intro hequiv
+    -- g ∈ π(f) means D f = D g
+    simp only [equiv_class, R, D, Set.mem_setOf_eq] at hequiv
+    -- We'll need the differentiability of f and g to move forward
+    have hf_diff : Differentiable ℝ f.val := (Set.mem_setOf.mp f.property).differentiable le_rfl
+    have hg_diff : Differentiable ℝ g.val := (Set.mem_setOf.mp g.property).differentiable le_rfl
+    -- We know D (g - f) = 0 since D g = D f and they are differentiable
+    have h : deriv (g.val - f.val) = 0 := by
+      funext x
+      rw [deriv_sub (hg_diff.differentiableAt) (hf_diff.differentiableAt)]
+      rw [← hequiv]
+      simp
+    -- Let c = g(0) - f(0). Goal becomes: for any x, show g(x) = f(x) + g(0) - f(0)
+    use (g.val - f.val) 0
+    intro x
+    -- Using the fact that D (g - f) = 0 we know that g(x) - f(x) = g(y) - f(y),
+    -- ie, g(x) - f(x) = g(0) - f(0)
+    have := is_const_of_deriv_eq_zero (hg_diff.sub hf_diff) (fun x => by simp [h]) x 0
+    rw [← this]
+    -- Goal is now: g(x) = f(x) + g(x) - f(x)
+    simp
+  · -- g(x) = f(x) + c → g ∈ π(f)
+    intro hc
+    obtain ⟨c, hc⟩ := hc
+    simp only [equiv_class, R, D, Set.mem_setOf_eq]
+    have heq := funext hc
+    rw [heq]
+    exact Eq.symm (deriv_add_const' c)
 end ex4
 
 namespace ex5

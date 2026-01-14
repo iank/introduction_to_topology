@@ -370,50 +370,77 @@ theorem equiv_class_characterization (f : X) :
 end ex4
 
 namespace ex5
-/- Exercise 5
+-- Exercise 5
 
-Let E be the set of all functions from a set X into a set Y.
-Let b ∈ X and let R be the subset of E × E consisting of those pairs (f, g)
-such that f(b) = g(b).
-
-Prove that R is an equivalence relation.
-
-Define a one-one onto function e_b : E/R → Y. -/
+-- Let E be the set of all functions from a set X into a set Y.
 variable (X Y : Type)
-variable (b : X)
-
 def E : Type := X → Y
 
+-- Let b ∈ X and let R be the subset of E × E consisting of those pairs (f, g)
+-- such that f(b) = g(b).
+variable (b : X)
 def R : E X Y → E X Y → Prop := fun f g => f b = g b
 
+-- Prove that R is an equivalence relation.
 theorem R_refl : ∀ f : E X Y, R X Y b f f := by
-  sorry
+  -- Show fRf is true for all f.
+  -- fRf means f(b) = f(b), which is true.
+  simp only [R, implies_true]
 
 theorem R_symm : ∀ f g : E X Y, R X Y b f g → R X Y b g f := by
-  sorry
+  -- Show fRg → gRf
+  intro f g
+  -- fRg means f(b) = g(b), so g(b) = f(b)
+  exact fun a ↦ a.symm
 
 theorem R_trans : ∀ f g h : E X Y, R X Y b f g → R X Y b g h → R X Y b f h := by
-  sorry
+  -- Show fRg, gRh → fRh
+  intro f g h
+  simp only [R]
+  -- Similarly, we have f(b) = g(b) and g(b) = h(b), so f(b) = h(b)
+  intro hfRg hgRh
+  rw [hfRg]
+  exact hgRh
 
 theorem R_equivalence : Equivalence (R X Y b) := by
-  sorry
+  constructor
+  case refl => apply R_refl
+  case symm => apply R_symm
+  case trans => apply R_trans
 
--- E/R
+-- Define a one-one onto function e_b : E/R → Y.
 def E_mod_R : Type := Quot (R X Y b)
 
--- E/R → Y
-def e_b : E_mod_R X Y b → Y := by
-  sorry
+-- E/R is the set of all functions from X → Y which are equivalent under R,
+-- ie which map b ∈ X to the same y ∈ Y. So we can define e_b as f(b) for any
+-- arbitrary member of the class.
+def e_b : E_mod_R X Y b → Y := Quot.lift (fun f => f b) (fun _f _g hR => hR)
 
 theorem e_b_injective : Function.Injective (e_b X Y b) := by
-  sorry
+  -- Prove that e_b(π(f)) = e_b(π(g)) → π(f) = π(g)
+  intro qf qg heb
+  -- Choose representatives f and g
+  obtain ⟨f, rfl⟩ := Quot.exists_rep qf
+  obtain ⟨g, rfl⟩ := Quot.exists_rep qg
+  -- Quot.sound: fRg → π(f) = π(g)
+  apply Quot.sound
+  -- And we do have fRg, since e_b(π(f)) = e_b(π(g)) means f(b) = g(b)
+  -- and fRg means f(b) = g(b)
+  exact heb
 
 theorem e_b_surjective : Function.Surjective (e_b X Y b) := by
-  sorry
+  -- Prove that ∀ y ∈ Y, ∃ a, e_b(π(a)) = y
+  intro y
+  -- An obvious example is the constant function a(x) = y
+  use Quot.mk _ (fun _ => y)
+  -- π(a) is therefore the set of all functions f where f(b) = y
+  -- and e_b(π(a)) = y.
+  simp only [e_b]
 
 theorem e_b_bijective : Function.Bijective (e_b X Y b) := by
-  sorry
-
+  constructor
+  · exact e_b_injective X Y b
+  · exact e_b_surjective X Y b
 end ex5
 
 end Ch1_7

@@ -110,7 +110,12 @@ Prove that for Z ⊆ C, (g ∘ f)⁻¹(Z) = f⁻¹(g⁻¹(Z))
 -/
 theorem ex4_comp_preimage {A B C : Type*} (f : A → B) (g : B → C) (Z : Set C) :
     (g ∘ f) ⁻¹' Z = f ⁻¹' (g ⁻¹' Z) := by
-  sorry
+  ext a
+  -- Both sides are definitionally equal.
+  -- a ∈ (g ∘ f)⁻¹(Z) means that g(f(a)) ∈ Z.
+  -- and a ∈ f⁻¹(g⁻¹(Z)) means that f(a) ∈ g⁻¹(Z), ie, g(f(a)) ∈ Z.
+  constructor <;> simp
+
 end ex4
 
 end Ch1_8

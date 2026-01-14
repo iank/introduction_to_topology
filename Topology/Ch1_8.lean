@@ -81,12 +81,24 @@ be commutative. -/
 -- a) Prove that g: B → A is onto
 theorem ex3_a {A B : Type*} (f : A → B) (g : B → A) (i : A → A)
     (hi : i = id) (hcomm : g ∘ f = i) : Function.Surjective g := by
-  sorry
+  -- For arbitrary a, show ∃ b ∈ B s.t. g(b) = a
+  intro a
+  -- Use b = f(a) to satisfy this.
+  use f a
+  change (g ∘ f) a = id a
+  rw [hcomm, hi]
 
 -- b) Prove that f: A → B is one-one.
 theorem ex3_b {A B : Type*} (f : A → B) (g : B → A) (i : A → A)
     (hi : i = id) (hcomm : g ∘ f = i) : Function.Injective f := by
-  sorry
+  -- For arbitrary a a', show f(a) = f(a') → a = a'
+  intro a a' hfeq
+  -- g(f(a)) = g(f(a')) because f(a) = f(a') and g is a function
+  have h : (g ∘ f) a = (g ∘ f) a' := congrArg g hfeq
+  -- By commutivity we know that g(f(a)) = a and g(f(a')) = a'
+  rw [hcomm, hi, id, id] at h
+  -- so a = a'.
+  exact h
 end ex3
 
 namespace ex4

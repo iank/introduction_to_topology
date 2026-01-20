@@ -94,10 +94,10 @@ theorem ex1b (hab : a ≤ b) (f : A a b) : h' a b hab f ∈ Set.univ := by
 noncomputable def g (f : C a b) : A a b :=
   sorry
 
-theorem ex1c_right_inverse (f : A a b) : g a b (h' a b f) = f := by
+theorem ex1c_right_inverse (hab : a ≤ b) (f : A a b) : g a b (h' a b hab f) = f := by
   sorry
 
-theorem ex1c_left_inverse (f : C a b) : h' a b (g a b f) = f := by
+theorem ex1c_left_inverse (hab : a ≤ b) (f : C a b) : h' a b hab (g a b f) = f := by
   sorry
 
 end ex1

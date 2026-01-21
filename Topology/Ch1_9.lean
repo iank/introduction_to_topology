@@ -243,7 +243,22 @@ end RStar
 end ex2
 
 namespace ex3
--- TODO: exercise 3
+-- Exercise 3
+
+-- Let A ⊆ B ⊆ X. Let f: A → Y, g: B → Y, and F: X → Y. Prove that if g is an
+-- extension of f to B and F is an extension of g to X, then F is an extension
+-- of f to X.
+variable {X Y : Type*}
+theorem extension_trans' {A B : Set X} (hAB : A ⊆ B)
+    (f : A → Y) (g : B → Y) (F : X → Y)
+    (hfg : ∀ a : A, f a = g ⟨a.val, hAB a.property⟩)
+    (hgF : ∀ b : B, g b = F b) :
+    ∀ x : A, f x = F x := by
+  intro x
+  specialize hfg x
+  specialize hgF ⟨x.val, hAB x.property⟩
+  rw [hfg]
+  rw [hgF]
 end ex3
 
 namespace ex4

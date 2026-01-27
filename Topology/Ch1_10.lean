@@ -88,15 +88,26 @@ theorem ex2a_unique (f : ∀ α, X α → Y α) (g : (∀ α, X α) → (∀ α,
 -- b) Given a third indexed family {Z_α} and functions g_α : Y_α → Z_α for each α ∈ I,
 -- show that ∏ g_α ∘ ∏ f_α = ∏ (g_α ∘ f_α).
 theorem ex2b (f : ∀ α, X α → Y α) (g : ∀ α, Y α → Z α) :
-    Pi_map g ∘ Pi_map f = Pi_map (fun α => g α ∘ f α) :=
-  sorry
+    Pi_map g ∘ Pi_map f = Pi_map (fun α => g α ∘ f α) := by
+  ext x α
+  simp only [Function.comp_apply, p, Pi_map]
 
 -- c) Suppose that each f_α has an inverse k_α. Prove that ∏ f_α has the inverse ∏ k_α.
-theorem ex2c (f : ∀ α, X α → Y α) (k : ∀ α, Y α → X α)
-    (hk : ∀ α, Function.LeftInverse (k α) (f α) ∧ Function.RightInverse (k α) (f α)) :
-    Function.LeftInverse (Pi_map k) (Pi_map f) ∧ Function.RightInverse (Pi_map k) (Pi_map f) :=
-  sorry
-
+theorem ex2c (f : ∀ α, X α → Y α) (k : ∀ α, Y α → X α) (hk : ∀ α,
+Function.LeftInverse (k α) (f α) ∧ Function.RightInverse (k α) (f α)) :
+    Function.LeftInverse (Pi_map k) (Pi_map f) ∧ Function.RightInverse (Pi_map
+    k) (Pi_map f) := by
+  constructor
+  case left =>
+    intro x
+    ext α
+    simp only [Pi_map, p]
+    exact (hk α).1 (x α)
+  case right =>
+    intro x
+    ext α
+    simp only [Pi_map, p]
+    exact (hk α).2 (x α)
 end ex2
 
 namespace ex3

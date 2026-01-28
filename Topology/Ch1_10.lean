@@ -176,7 +176,55 @@ def ex3b {J : Type*} {Idx : J → Type*} {X : (Σ γ, Idx γ) → Type*} :
 end ex3
 
 namespace ex4
--- TODO
+-- Exercise 4:
+-- Let N be the set of positive integers. In the notation of Problem 1,
+-- An infinite sequence x₁, x₂, ... of points of a set X may be viewed as an
+-- element x ∈ Xᴺ.
+-- If j : N → N is a function such that j(i) < j(i + 1) for i ∈ N, then the
+-- infinite sequence xj is a subsequence of the sequence x.
+-- Prove that a subsequence of xj is a subsequence of x.
+
+-- Recall an "element x ∈ Xᴺ" is a function x : N → X.
+-- Also, the book specifies positive integers but it's a little bit cleaner to do this on ℕ.
+
+-- A function j : N → N is strictly increasing if j(i) < j(i + 1) for all i ∈ N.
+def StrictlyIncreasing (j : ℕ → ℕ) : Prop :=
+  ∀ i : ℕ, j i < j (i + 1)
+
+-- y is a subsequence of x if there exists a strictly increasing j such that y = x ∘ j.
+def IsSubsequence {X : Type*} (y x : ℕ → X) : Prop :=
+  ∃ j : ℕ → ℕ, StrictlyIncreasing j ∧ y = x ∘ j
+
+lemma StrictlyIncreasing.monotone {j : ℕ → ℕ} (hj : StrictlyIncreasing j) :
+    ∀ a b, a < b → j a < j b := by
+  intro a b hab
+  induction hab with
+  | refl =>
+    exact hj a
+  | @step m h ih =>
+    exact Nat.lt_trans ih (hj m)
+
+-- Prove that a subsequence of xj is a subsequence of x.
+theorem ex4 {X : Type*} (x xj xjk : ℕ → X)
+    (h1 : IsSubsequence xj x) (h2 : IsSubsequence xjk xj) : IsSubsequence xjk x := by
+  simp only [IsSubsequence] at *
+  obtain ⟨j, hj, fj⟩ := h1
+  obtain ⟨k, hk, fk⟩ := h2
+  use j ∘ k
+  constructor
+  · -- Prove jk is also strictly increasing
+    intro i
+    have ki_mono := StrictlyIncreasing.monotone hk
+    specialize ki_mono i (i+1)
+    simp only [Function.comp_apply]
+    have jk_mono := StrictlyIncreasing.monotone hj
+    specialize jk_mono (k i) (k (i+1))
+    exact jk_mono (ki_mono (Nat.lt_succ_self i))
+  · -- Prove xjk = x ∘ j ∘ k
+    rw [fk]
+    rw [fj]
+    rfl
+
 end ex4
 
 end Ch1_10

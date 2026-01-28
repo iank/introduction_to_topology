@@ -111,7 +111,68 @@ Function.LeftInverse (k α) (f α) ∧ Function.RightInverse (k α) (f α)) :
 end ex2
 
 namespace ex3
--- TODO
+-- Exercise 3:
+
+-- Let {X_α}_{α ∈ I} be an indexed family of sets and let
+-- I = I₁ ∪ I₂, where I₁ ∩ I₂ = ∅.
+
+-- a) Show that there is a one-one mapping of (∏_{α ∈ I₁} X_α) × (∏_{α ∈ I₂} X_α)
+-- onto ∏_{α ∈ I} X_α.
+
+-- We can represent the disjoint union I as a Sum type: I = I₁ ⊕ I₂
+def ex3a_map {I₁ I₂ : Type*} {X : I₁ ⊕ I₂ → Type*} :
+    ((∀ α : I₁, X (Sum.inl α)) × (∀ α : I₂, X (Sum.inr α))) → (∀ α : I₁ ⊕ I₂, X α) :=
+  -- Input here is a pair of functions, f₁ : I₁ → ⋃ X_α, and
+  --                                    f₂ : I₂ → ⋃ X_α.
+  -- We map them to ∏ X_α by constructing a function f : I → ⋃ X_α so f(α) is either
+  -- f₁(α) or f₂(α), depending on whether α ∈ I₁ or α ∈ I₂.
+  fun f α => match α with
+  | Sum.inl i₁ => f.1 i₁
+  | Sum.inr i₂ => f.2 i₂
+
+def ex3a_inv {I₁ I₂ : Type*} {X : I₁ ⊕ I₂ → Type*} :
+    (∀ α : I₁ ⊕ I₂, X α) → ((∀ α : I₁, X (Sum.inl α)) × (∀ α : I₂, X (Sum.inr α))) :=
+  fun f => (fun i₁ => f (Sum.inl i₁), fun i₂ => f (Sum.inr i₂))
+
+def ex3a {I₁ I₂ : Type*} {X : I₁ ⊕ I₂ → Type*} :
+    ((∀ α : I₁, X (Sum.inl α)) × (∀ α : I₂, X (Sum.inr α))) ≃ (∀ α : I₁ ⊕ I₂, X α) where
+  toFun := ex3a_map
+  invFun := ex3a_inv
+  left_inv := by
+    intro x
+    rfl
+  right_inv := by
+    intro x
+    ext α
+    cases α <;> rfl
+
+-- b) More generally, let {I_γ}_{γ ∈ J} be a partition of I, that is
+-- I = ⋃_{γ ∈ J} I_γ, I_γ ∩ I_γ' = ∅ for γ ≠ γ', each I_γ ≠ ∅.
+-- Show that there is a one-one mapping of ∏_{γ ∈ J} (∏_{α ∈ I_γ} X_α) onto ∏_{α ∈ I} X_α.
+
+-- We can represent the partition using a Sigma type: I = Σ γ : J, I_γ
+-- where I_γ is a family of types indexed by J.
+def ex3b_map {J : Type*} {Idx : J → Type*} {X : (Σ γ, Idx γ) → Type*} :
+    (∀ γ : J, ∀ α : Idx γ, X ⟨γ, α⟩) → (∀ α : Σ γ, Idx γ, X α) :=
+  -- Input is a sequence of functions, fⱼ : Iⱼ → ⋃ X_α
+  -- Construct a function f : I → ⋃ X_α that is equal to fⱼ(α) depending on
+  -- which Iⱼ the α is in.
+  fun f ⟨γ, α⟩ => f γ α
+
+def ex3b_inv {J : Type*} {Idx : J → Type*} {X : (Σ γ, Idx γ) → Type*} :
+    (∀ α : Σ γ, Idx γ, X α) → (∀ γ : J, ∀ α : Idx γ, X ⟨γ, α⟩) :=
+  fun f γ α => f ⟨γ, α⟩
+
+def ex3b {J : Type*} {Idx : J → Type*} {X : (Σ γ, Idx γ) → Type*} :
+    (∀ γ : J, ∀ α : Idx γ, X ⟨γ, α⟩) ≃ (∀ α : Σ γ, Idx γ, X α) where
+  toFun := ex3b_map
+  invFun := ex3b_inv
+  left_inv := by
+    intro x
+    rfl
+  right_inv := by
+    intro x
+    rfl
 end ex3
 
 namespace ex4

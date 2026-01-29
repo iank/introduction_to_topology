@@ -54,11 +54,34 @@ theorem ex2a {n : ℕ+} : IsMetric (d'' n) where
     intro i
     simp only [Pi.zero_apply, abs_nonneg]
   eq_zero_iff := by
-    sorry
+    simp only [d'']
+    intro x y
+    rw [Fintype.sum_eq_zero_iff_of_nonneg ?f_nonneg]
+    · rw [funext_iff]
+      simp only [Pi.zero_apply, abs_eq_zero]
+      constructor
+      · intro h
+        funext i
+        have hi := h i
+        rw [sub_eq_zero] at hi
+        exact hi
+      · intro heq i
+        exact sub_eq_zero_of_eq (congrFun heq i)
+    · intro i
+      simp only [Pi.zero_apply, abs_nonneg]
   symm := by
-    sorry
+    simp only [d'']
+    intro x y
+    rw [Fintype.sum_congr]
+    intro i
+    exact abs_sub_comm (x i) (y i)
   triangle := by
-    sorry
+    simp only [d'']
+    intro x y z
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_le_sum
+    intro i _
+    exact abs_sub_le (x i) (y i) (z i)
 
 -- b) In (ℝ², d'') determine the shape and position of the set of points x such that d''(x, a) ≤ 1
 -- for a point a ∈ ℝ².

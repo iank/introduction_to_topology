@@ -92,7 +92,52 @@ theorem ex2a {n : ℕ+} : IsMetric (d'' n) where
 end ex2
 
 namespace ex3
--- TODO
+-- Exercise 3:
+def Rn (n : ℕ+) := Fin n → ℝ
+
+-- Let d be the distance function defined on ℝⁿ by using Theorem 2.3
+-- d(x, y) = max i ∈ Fin n, |x i - y i|
+def d (n : ℕ+) : Rn n → Rn n → ℝ :=
+  fun x y => Finset.sup' Finset.univ (Finset.univ_nonempty) (fun i => |x i - y i|)
+
+-- Let d' be the Euclidean distance function
+noncomputable
+def d' (n : ℕ+) : Rn n → Rn n → ℝ :=
+  fun x y => √(∑ i, (x i - y i)^2)
+
+-- And let d'' be the distance function defined in Problem 2 above.
+def d'' (n : ℕ+) : Rn n → Rn n → ℝ :=
+  fun x y => ∑ i, |x i - y i|
+
+-- Prove that for each pair of points x, y ∈ ℝⁿ,
+-- a) d(x, y) ≤ d'(x, y)  ≤ √n · d(x, y)
+theorem ex3a_i {n : ℕ+} (x y : Rn n) : d n x y ≤ d' n x y := by
+  -- Show that the maximum abs difference (index j) is ≤ the euclidean distance
+  -- by using that term in the euclidean distance sum as a lower bound for the whole sum.
+  unfold d d'
+  -- Let j = argmax i |x_i - y_i|, we can replace d(x, y) with |x_j - y_j|.
+  apply Finset.sup'_le
+  intro j hj
+  rw [← Real.sqrt_sq_eq_abs] -- Get rid of the abs since sqrt(x^2) = |x|
+  apply Real.sqrt_le_sqrt    -- Get rid of the √s
+  -- Since the function being summed is nonnegative, any single instance of the function
+  -- in the sum is a lower bound on the sum.
+  apply Finset.single_le_sum (f := fun i => (x i - y i) ^ 2)
+  · intro i hi
+    exact sq_nonneg (x i - y i)
+  · exact hj
+
+theorem ex3a_ii {n : ℕ+} (x y : Rn n) : d' n x y ≤ √n * d n x y := by
+  sorry
+
+-- b) d(x, y) ≤ d''(x, y) ≤ n · d(x, y)
+
+theorem ex3b_i {n : ℕ+} (x y : Rn n) : d n x y ≤ d'' n x y := by
+  sorry
+
+theorem ex3b_ii {n : ℕ+} (x y : Rn n) : d'' n x y ≤ n * d n x y := by
+  sorry
+
 end ex3
 
 namespace ex4

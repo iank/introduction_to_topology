@@ -7,3 +7,5 @@ import Topology.Ch1_7
 import Topology.Ch1_8
 import Topology.Ch1_9
 import Topology.Ch1_10
+
+import Topology.Ch2_2

@@ -85,7 +85,10 @@ theorem ex2a {n : ℕ+} : IsMetric (d'' n) where
 
 -- b) In (ℝ², d'') determine the shape and position of the set of points x such that d''(x, a) ≤ 1
 -- for a point a ∈ ℝ².
--- TODO
+
+-- Answer: It's a 45-degree rotated square centered on a. Maybe this is a
+-- failure of imagination but I think any theorem formalizing this would just
+-- end up being a trivially true restatement of the function d''.
 end ex2
 
 namespace ex3

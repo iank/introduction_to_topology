@@ -3,14 +3,13 @@ import Mathlib
 namespace Ch2_2
 
 -- Section 2, Metric spaces
-
-namespace ex1
 structure IsMetric {X : Type*} (d : X → X → ℝ) : Prop where
   nonneg : ∀ x y, 0 ≤ d x y
   eq_zero_iff : ∀ x y, d x y = 0 ↔ x = y
   symm : ∀ x y, d x y = d y x
   triangle : ∀ x y z, d x z ≤ d x y + d y z
 
+namespace ex1
 -- Let (X, d) be a metric space. Let k be a positive real number and set dₖ(x, y) = k·d(x, y).
 -- Prove that (X, dₖ) is a metric space.
 theorem ex1a {X : Type*} (k : NNReal) (hk : 0 < k) (d : X → X → ℝ) (hd : IsMetric d) :
@@ -38,6 +37,31 @@ theorem ex1a {X : Type*} (k : NNReal) (hk : 0 < k) (d : X → X → ℝ) (hd : I
 end ex1
 
 namespace ex2
+-- a) Prove that (ℝⁿ, d'') is a metric space, where the function d'' is defined by the
+--     correspondence d''(x, y) = Σ|xᵢ - yᵢ|, for x = (x₁, x₂, ..., xₙ) and
+--     y = (y₁, y₂, ..., yₙ) ∈ ℝⁿ.
+
+def Rn (n : ℕ+) := Fin n → ℝ
+
+def d'' (n : ℕ+) : Rn n → Rn n → ℝ :=
+  fun x y => ∑ i, |x i - y i|
+
+theorem ex2a {n : ℕ+} : IsMetric (d'' n) where
+  nonneg := by
+    simp only [d'']
+    intro x y
+    refine Fintype.sum_nonneg ?_
+    intro i
+    simp only [Pi.zero_apply, abs_nonneg]
+  eq_zero_iff := by
+    sorry
+  symm := by
+    sorry
+  triangle := by
+    sorry
+
+-- b) In (ℝ², d'') determine the shape and position of the set of points x such that d''(x, a) ≤ 1
+-- for a point a ∈ ℝ².
 -- TODO
 end ex2
 

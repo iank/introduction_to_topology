@@ -155,10 +155,24 @@ theorem ex3a_ii {n : ℕ+} (x y : Rn n) : d' n x y ≤ √n * d n x y := by
 -- b) d(x, y) ≤ d''(x, y) ≤ n · d(x, y)
 
 theorem ex3b_i {n : ℕ+} (x y : Rn n) : d n x y ≤ d'' n x y := by
-  sorry
+  -- Trivial, max i, |x i - y i| < sum i, |x i - y i|
+  unfold d d''
+  simp only [Finset.sup'_le_iff, Finset.mem_univ, forall_const]
+  intro j
+  apply Finset.single_le_sum (f := fun i => |x i - y i|)
+  · intro i hi
+    exact abs_nonneg _
+  · exact Finset.mem_univ j
 
 theorem ex3b_ii {n : ℕ+} (x y : Rn n) : d'' n x y ≤ n * d n x y := by
-  sorry
+  -- Similar reasoning to ex3a_ii, n*max >= n*(sum of n terms less than or equal to max)
+  unfold d''
+  convert Finset.sum_le_card_nsmul Finset.univ (fun i => |x i - y i|) (d n x y) ?term_max
+  · ext x
+    simp only [Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+  · intro j hj
+    simp only [d, Finset.le_sup'_iff, Finset.mem_univ, true_and]
+    use j
 
 end ex3
 

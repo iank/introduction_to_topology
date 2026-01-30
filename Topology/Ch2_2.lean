@@ -128,7 +128,29 @@ theorem ex3a_i {n : ℕ+} (x y : Rn n) : d n x y ≤ d' n x y := by
   · exact hj
 
 theorem ex3a_ii {n : ℕ+} (x y : Rn n) : d' n x y ≤ √n * d n x y := by
-  sorry
+  -- Rewrite so the LHS is just a sum
+  rw [show d n x y = √((d n x y)^2) from (Real.sqrt_sq (?d_nonneg)).symm]
+  · rw [← Real.sqrt_mul ?n_nonneg]
+    · unfold d'
+      apply Real.sqrt_le_sqrt
+      -- goal now: ∑ i, (x i - y i) ^ 2 ≤ ↑↑n * d n x y ^ 2
+      -- But since d(x, y)^2 is equal to max j, |x j - y j|^2, and there are n terms in the sum,
+      -- the sum is at most n * d(x, y)^2.
+      convert Finset.sum_le_card_nsmul Finset.univ (fun i => (x i - y i)^2) (d n x y ^ 2) ?term_max
+      · -- proof about the size of the sum w/r/t n
+        ext x
+        simp only [Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+      · -- show that (x j - y j)^2 ≤ (max |x i - y i|)^2 for all j.
+        intro j
+        simp only [Finset.mem_univ, forall_const, d]
+        rw [← sq_abs]
+        gcongr
+        · exact Finset.le_sup' (fun i => |x i - y i|) (Finset.mem_univ j)
+    · -- n is nonnegative
+      positivity
+  · -- d is nonnegative
+    unfold d
+    simp only [Finset.le_sup'_iff, Finset.mem_univ, abs_nonneg, and_self, exists_const]
 
 -- b) d(x, y) ≤ d''(x, y) ≤ n · d(x, y)
 

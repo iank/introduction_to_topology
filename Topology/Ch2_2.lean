@@ -177,7 +177,101 @@ theorem ex3b_ii {n : ℕ+} (x y : Rn n) : d'' n x y ≤ n * d n x y := by
 end ex3
 
 namespace ex4
--- TODO
+-- Let X be the set of all continuous functions f:[a, b] → ℝ.
+-- For f, g ∈ X, define d(f, g) = ∫_a^b |f(t) - g(t)| dt.
+-- Prove that (X, d) is a metric space.
+
+noncomputable def d_int (a b : ℝ) (hab : a < b) :
+    C(Set.Icc a b, ℝ) → C(Set.Icc a b, ℝ) → ℝ :=
+  fun f g => ∫ x in Set.Icc a b, ‖Set.IccExtend hab.le f x - Set.IccExtend hab.le g x‖
+
+theorem ex4a {a b : ℝ} (hab : a < b) : IsMetric (d_int a b hab) where
+  nonneg := by
+    intro f g
+    unfold d_int
+    apply MeasureTheory.setIntegral_nonneg measurableSet_Icc
+    intro x _
+    positivity
+  eq_zero_iff := by
+    intro f g
+    constructor
+    · intro h
+      unfold d_int at h
+      -- integrad is nonnegative
+      have hf : 0 ≤ᵐ[MeasureTheory.volume.restrict (Set.Icc a b)]
+          fun x => ‖Set.IccExtend hab.le f x - Set.IccExtend hab.le g x‖ :=
+        Filter.Eventually.of_forall (fun x => norm_nonneg _)
+      -- integrand is integrable
+      have hfi : MeasureTheory.IntegrableOn
+          (fun x => ‖Set.IccExtend hab.le f x - Set.IccExtend hab.le g x‖)
+          (Set.Icc a b) MeasureTheory.volume := by
+        apply Continuous.integrableOn_Icc
+        exact ((Continuous.Icc_extend' f.continuous).sub
+               (Continuous.Icc_extend' g.continuous)).norm
+      -- integral of nonneg function = 0 → function is ae zero
+      have h_ae : (fun x => ‖Set.IccExtend hab.le f x - Set.IccExtend hab.le g x‖)
+          =ᵐ[MeasureTheory.volume.restrict (Set.Icc a b)] 0 :=
+        (MeasureTheory.setIntegral_eq_zero_iff_of_nonneg_ae hf hfi).mp h
+      -- |f - g| ae 0 implies f ae g
+      have h_ae_fg : Set.IccExtend hab.le f
+          =ᵐ[MeasureTheory.volume.restrict (Set.Icc a b)] Set.IccExtend hab.le g := by
+        refine h_ae.mono ?_
+        intro x hx
+        exact sub_eq_zero.mp (norm_eq_zero.mp hx)
+      -- continuous functions that are ae equal on Icc are equal everywhere on Icc
+      have h_eqOn : Set.EqOn (Set.IccExtend hab.le f) (Set.IccExtend hab.le g) (Set.Icc a b) :=
+        MeasureTheory.Measure.eqOn_Icc_of_ae_eq (μ := MeasureTheory.volume) (ne_of_lt hab) h_ae_fg
+          (Continuous.Icc_extend' f.continuous).continuousOn
+          (Continuous.Icc_extend' g.continuous).continuousOn
+      ext ⟨x, hx⟩
+      have := h_eqOn hx
+      simp only [Set.IccExtend_of_mem _ _ hx] at this
+      exact this
+    · intro h
+      subst h
+      simp [d_int]
+  symm := by
+    intro f g
+    unfold d_int
+    refine MeasureTheory.setIntegral_congr_fun measurableSet_Icc ?_
+    intro x hx
+    simp only [Real.norm_eq_abs]
+    exact abs_sub_comm (Set.IccExtend (LT.lt.le hab) (⇑f) x) (Set.IccExtend (LT.lt.le hab) (⇑g) x)
+  triangle := by
+    intro f g h
+    unfold d_int
+    simp only [Real.norm_eq_abs]
+    -- Abbreviations for the extended functions and their continuity
+    let F := Set.IccExtend hab.le (⇑f)
+    let G := Set.IccExtend hab.le (⇑g)
+    let H := Set.IccExtend hab.le (⇑h)
+    have hF : Continuous F := Continuous.Icc_extend' f.continuous
+    have hG : Continuous G := Continuous.Icc_extend' g.continuous
+    have hH : Continuous H := Continuous.Icc_extend' h.continuous
+    -- Convenience: continuity of |F - G|, |G - H|
+    have hcont_fg : Continuous fun x => |F x - G x| := (hF.sub hG).abs
+    have hcont_gh : Continuous fun x => |G x - H x| := (hG.sub hH).abs
+    -- Integrability of |(F-G)+(G-H)| on [a,b]
+    have hcont_fgh : MeasureTheory.IntegrableOn
+        (fun x => |(F x - G x) + (G x - H x)|) (Set.Icc a b) MeasureTheory.volume := by
+      apply ContinuousOn.integrableOn_compact isCompact_Icc
+      exact ((hF.sub hG).add (hG.sub hH)).abs.continuousOn
+    -- ∫|F-H| = ∫|(F-G)+(G-H)| ≤ ∫(|F-G|+|G-H|) = ∫|F-G| + ∫|G-H|
+    calc ∫ (x : ℝ) in Set.Icc a b, |F x - H x|
+        = ∫ (x : ℝ) in Set.Icc a b, |(F x - G x) + (G x - H x)| := by
+            congr; ext; ring_nf
+        _ ≤ ∫ (x : ℝ) in Set.Icc a b, (|F x - G x| + |G x - H x|) := by
+            apply MeasureTheory.setIntegral_mono_on
+            · exact hcont_fgh
+            · exact (hcont_fg.add hcont_gh).integrableOn_Icc
+            · exact measurableSet_Icc
+            · intro x _; exact abs_add_le _ _
+        _ = (∫ (x : ℝ) in Set.Icc a b, |F x - G x|) +
+             ∫ (x : ℝ) in Set.Icc a b, |G x - H x| := by
+            rw [MeasureTheory.integral_add]
+            · exact hcont_fg.integrableOn_Icc
+            · exact hcont_gh.integrableOn_Icc
+
 end ex4
 
 namespace ex5

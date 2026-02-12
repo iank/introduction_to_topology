@@ -275,7 +275,66 @@ theorem ex4a {a b : ℝ} (hab : a < b) : IsMetric (d_int a b hab) where
 end ex4
 
 namespace ex5
--- TODO
+-- Let X' be the set of all bounded functions f:[a, b] → ℝ.
+-- For f, g ∈ X', define d'(f, g) = sup {|f(x) - g(x)| : x ∈ [a, b]}.
+-- Prove that (X', d') is a metric space.
+
+-- A bounded function on [a, b]
+@[ext]
+structure BoundedFun (a b : ℝ) (hab : a ≤ b) where
+  toFun : Set.Icc a b → ℝ
+  bound : ∃ K : ℝ, ∀ x, |toFun x| ≤ K
+
+instance (a b : ℝ) (hab : a ≤ b) : CoeFun (BoundedFun a b hab) (fun _ => Set.Icc a b → ℝ) :=
+  ⟨BoundedFun.toFun⟩
+
+-- The sup metric on bounded functions
+noncomputable def d' (a b : ℝ) (hab : a ≤ b) :
+    BoundedFun a b hab → BoundedFun a b hab → ℝ :=
+  fun f g => ⨆ x : Set.Icc a b, |f x - g x|
+
+-- Helper: |f x - g x| is bounded above
+lemma bddAbove_abs_sub (hab : a ≤ b) (f g : BoundedFun a b hab) :
+    BddAbove (Set.range (fun x => |f x - g x|)) := by
+  unfold BoundedFun.toFun
+  obtain ⟨K₁, hK₁⟩ := f.bound
+  obtain ⟨K₂, hK₂⟩ := g.bound
+  use K₁ + K₂
+  rintro _ ⟨x, rfl⟩
+  calc |f.1 x - g.1 x| ≤ |f.1 x| + |g.1 x| := abs_sub _ _
+    _ ≤ K₁ + K₂ := add_le_add (hK₁ x) (hK₂ x)
+
+theorem ex5a {a b : ℝ} (hab : a ≤ b) : IsMetric (d' a b hab) where
+  nonneg := by
+    intro x y
+    -- Supremum of nonnegative function is nonnegative
+    exact Real.iSup_nonneg (fun i => abs_nonneg _)
+  eq_zero_iff := by
+    intro x y
+    unfold d'
+    constructor
+    · -- Forward case: ⊔ |x - y| = 0 → x = y
+      intro h
+      -- ⊔ = 0 → ⊔ ≤ 0
+      have hsup_nonpos : ⨆ i, |x.toFun i - y.toFun i| ≤ 0 := by
+        exact ge_of_eq (id (Eq.symm h))
+      -- since ⊔ d' ≤ 0 and d' is nonnegative, d' is 0 everywhere
+      have hd_zero : ∀ i, x.toFun i - y.toFun i = 0 := by
+        intro i
+        have hi := le_trans (le_ciSup (bddAbove_abs_sub hab x y) i) hsup_nonpos
+        exact abs_eq_zero.mp (le_antisymm hi (abs_nonneg _))
+      -- x - y = 0 everywhere → x = y everywhere.
+      ext i
+      exact sub_eq_zero.mp (hd_zero i)
+    · -- Reverse case: x = y → ⊔ |x - y| = 0
+      intro h
+      subst h
+      -- ie, show ⊔ |x - x| = 0
+      simp only [sub_self, abs_zero]
+      -- ie, show ⊔ 0 = 0
+      exact Real.iSup_const_zero
+  symm := by sorry
+  triangle := by sorry
 end ex5
 
 namespace ex6

@@ -333,8 +333,28 @@ theorem ex5a {a b : ℝ} (hab : a ≤ b) : IsMetric (d' a b hab) where
       simp only [sub_self, abs_zero]
       -- ie, show ⊔ 0 = 0
       exact Real.iSup_const_zero
-  symm := by sorry
-  triangle := by sorry
+  symm := by
+    intro x y
+    unfold d'
+    refine iSup_congr ?_
+    intro i
+    exact abs_sub_comm (x.toFun i) (y.toFun i)
+  triangle := by
+    intro x y z
+    unfold d'
+    unfold BoundedFun.toFun
+    haveI : Nonempty (Set.Icc a b) := ⟨⟨a, le_refl a, hab⟩⟩
+    have hxy_bd := bddAbove_abs_sub hab x y
+    have hyz_bd := bddAbove_abs_sub hab y z
+    calc ⨆ t, |x.1 t - z.1 t| ≤ ⨆ t, (|x.1 t - y.1 t| + |y.1 t - z.1 t|) := by
+          apply ciSup_mono
+          · exact BddAbove.range_add hxy_bd hyz_bd
+          · exact fun t ↦ abs_sub_le (x.toFun t) (y.toFun t) (z.toFun t)
+        _ ≤ (⨆ t, |x.1 t - y.1 t|) + ⨆ t, |y.1 t - z.1 t| := by
+          apply ciSup_le
+          intro t
+          exact add_le_add (le_ciSup hxy_bd t) (le_ciSup hyz_bd t)
+
 end ex5
 
 namespace ex6
@@ -342,7 +362,43 @@ namespace ex6
 end ex6
 
 namespace ex7
--- TODO
+-- Let X be a set. For x, y ∈ X define the function d by:
+--     d(x, x) = 0
+-- and
+--     d(x, y) = 1
+-- if x ≠ y. Prove that (X, d) is a metric space.
+
+variable (X : Type*) [DecidableEq X]
+
+noncomputable def d (x y : X) : ℝ := if x = y then 0 else 1
+
+theorem ex7a : IsMetric (d (X := X)) where
+  nonneg := by
+    intro x y
+    unfold d
+    positivity
+  eq_zero_iff := by
+    intro x y
+    unfold d
+    simp only [ite_eq_left_iff, one_ne_zero, imp_false, Decidable.not_not]
+  symm := by
+    intro x y
+    unfold d
+    refine ite_cond_congr ?_
+    simp only [eq_iff_iff]
+    exact eq_comm
+  triangle := by
+    intro x y z
+    unfold d
+    -- Either LHS is 0 (simple) or LHS is 1 (simple after we work through some cases)
+    by_cases hlhs : x = z
+    · simp only [hlhs]
+      positivity
+    · simp only [hlhs]
+      by_cases hrhs : y = z
+      · simp only [↓reduceIte, hrhs, hlhs, add_zero, le_refl]
+      · simp only [↓reduceIte, hrhs, le_add_iff_nonneg_left]
+        positivity
 end ex7
 
 namespace ex8

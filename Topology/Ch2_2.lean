@@ -402,7 +402,60 @@ theorem ex7a : IsMetric (d (X := X)) where
 end ex7
 
 namespace ex8
--- TODO
+
+-- Let ℤ be the set of integers. Let p be a positive prime integer.
+variable (p : ℕ) [hp : Fact p.Prime]
+
+-- Given distinct integers m, n, there is a unique integer t = t(m, n) such that m - n = pᵗ·k,
+-- where k is an integer not divisible by p.
+noncomputable def t (m n : ℤ) : ℕ := padicValInt p (m - n)
+
+-- Define a function d: ℤ×ℤ → ℝ by the correspondence
+--     d(m, m) = 0
+-- and
+--     d(m, n) = 1 / pᵗ
+-- for m ≠ n.
+noncomputable def d (m n : ℤ) : ℝ :=
+  if m = n then 0 else (1 : ℝ) / (p : ℝ) ^ (t p m n)
+
+--  Prove that (ℤ, d) is a metric space.
+theorem ex8a : IsMetric (d p) where
+  nonneg := by
+    intro m n
+    unfold d
+    -- (trivial: d is either 0 or 1/pᵗ, where p is positive)
+    positivity
+  eq_zero_iff := by
+    intro m n
+    unfold d t
+    -- d(m, n) = 0 means either:
+    --   m = n, by definition
+    --   or 1/pᵗ = 0. By ruling this out we can conclude d(m, n) = 0 ↔ m = n
+    refine Ne.ite_eq_left_iff ?_
+    refine Ne.symm (one_div_ne_zero ?_)
+    simp only [ne_eq, pow_eq_zero_iff', Nat.cast_eq_zero, hp.out.ne_zero, padicValInt.eq_zero_iff,
+      not_or, Decidable.not_not, false_and, not_false_eq_true]
+  symm := by
+    intro m n
+    unfold d
+    refine ite_congr ?_ (congrFun rfl) ?_
+    -- Trivial if m = n.
+    · simp only [eq_iff_iff]
+      exact eq_comm
+    -- If m ≠ n, show that 1 / pᵗ is symmetric
+    · intro hne
+      congr 2     -- ie, that t(m, n) = t(n, m)
+      unfold t padicValInt
+      congr 1     -- ie, that |m - n| = |n - m|
+      rw [← neg_sub]
+      exact Int.natAbs_neg (n - m)
+  triangle := by
+    -- Hint:
+    --   For a, b, c ∈ ℤ, t(a, c) ≥ minimum {t(a, b), t(b, c)}.
+    --   Let p = 3.
+    --   What is the set of elements x ∈ ℤ such that d(0, x) < 1?
+    --   What is the set of elements x ∈ ℤ such that d(0, x) < 1/3?
+    sorry
 end ex8
 
 end Ch2_2
